@@ -16,27 +16,31 @@ export default function() {
 
   useEffect(() => {
     console.log("[WFO-Note] App runs ok!!!");
-  }, []);
-
-  useEffect(() => {
-    // console.log('Selected dates changed:', selected);
-    if (!selected || selected.length === 0) {
-      return;
+    const storedWorkDays = localStorage.getItem('workDays');
+    if (storedWorkDays) {
+      const workDaysArray = JSON.parse(storedWorkDays);
+      setWorkDays(workDaysArray.map((time: number) => new Date(time)));
+    }
+    const storedRestDays = localStorage.getItem('restDays');
+    if (storedRestDays) {
+      const restDaysArray = JSON.parse(storedRestDays);
+      setRestDays(restDaysArray.map((time: number) => new Date(time)));
     }
 
-    const start = new Date(selected[0]);
+    const start = new Date();
     start.setDate(1);
     const end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
     const days = eachDayOfInterval({ start, end });
     const workdays = days.filter(day => !isWeekend(day)).length;
 
     setRealWorkDays(workdays);
-    // console.log(workdays);
-  }, [selected]);
+  }, []);
 
   const resetCurrentMonth = useCallback(() => {
     setWorkDays([]);
     setRestDays([]);
+    localStorage.setItem('workDays', JSON.stringify([]));
+    localStorage.setItem('restDays', JSON.stringify([]));
   }, []);
 
   return (
@@ -66,9 +70,7 @@ export default function() {
               dayOfWeek: [0, 6]
             }}
             onSelect={setSelected}
-            // footer={
-            //   selected ? `Selected: ${selected.toLocaleDateString()}` : "Pick a day."
-            // }
+            onMonthChange={(month) => console.log(month)}
           />
           <div className='flex-row' style={{  width: '100%', gap: '10px', marginTop: '5px' }}>
             <div className='flex-row' style={{ alignItems: 'center', gap: '5px' }}>
@@ -103,26 +105,29 @@ export default function() {
               <div style={{marginBottom: '10px', fontSize: '16px'}}><span>我准备：</span></div>
               <div className='flex-column' style={{flexDirection: 'row'}}>
                 <button style={{width: '100%', marginBottom: '10px'}} onClick={() => {
-                  console.log('Selected dates:', selected);
-                  setSelected([]);
-                  console.log(typeof selected?.[0]);
                   if (selected && selected.length > 0) {
                     const selectedTimes = selected.map(item => item.getTime());
                     setWorkDays([...workDays, ...selected]);
+                    localStorage.setItem('workDays', JSON.stringify([...workDays, ...selected].map(date => date.getTime())));
                     // Remove from restDays if exists
                     setRestDays(restDays.filter(
                       date => date.getTime() !== selectedTimes.includes(date.getTime())));
+                    localStorage.setItem('restDays', JSON.stringify(restDays.map(date => date.getTime())));
                   }
+                  setSelected([]);
                 }}>公司办公</button>
                 <button style={{width: '100%', marginBottom: '10px'}}
                   onClick={() => {
                     if (selected && selected.length > 0) {
                       const selectedTimes = selected.map(item => item.getTime());
                       setRestDays([...restDays, ...selected]);
+                      localStorage.setItem('restDays', JSON.stringify([...restDays, ...selected].map(date => date.getTime())));
                       // Remove from workDays if exists
                       setWorkDays(workDays.filter(
                         date => date.getTime() !== selectedTimes.includes(date.getTime())));
+                      localStorage.setItem('workDays', JSON.stringify(workDays.map(date => date.getTime())));
                     }
+                    setSelected([]);
                   }}>休假</button>
               </div>
             </div>
