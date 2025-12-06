@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { eachDayOfInterval, isWeekend } from 'date-fns';
+import StorageUtils from '@/utils/StorageUtils';
 
 import "./Popup.css";
 
@@ -16,15 +17,13 @@ export default function() {
 
   useEffect(() => {
     console.log("[WFO-Note] App runs ok!!!");
-    const storedWorkDays = localStorage.getItem('workDays');
+    const storedWorkDays = StorageUtils.load('workDays');
     if (storedWorkDays) {
-      const workDaysArray = JSON.parse(storedWorkDays);
-      setWorkDays(workDaysArray.map((time: number) => new Date(time)));
+      setWorkDays(storedWorkDays.map((time: number) => new Date(time)));
     }
-    const storedRestDays = localStorage.getItem('restDays');
+    const storedRestDays = StorageUtils.load('restDays');
     if (storedRestDays) {
-      const restDaysArray = JSON.parse(storedRestDays);
-      setRestDays(restDaysArray.map((time: number) => new Date(time)));
+      setRestDays(storedRestDays.map((time: number) => new Date(time)));
     }
 
     const start = new Date();
@@ -108,11 +107,11 @@ export default function() {
                   if (selected && selected.length > 0) {
                     const selectedTimes = selected.map(item => item.getTime());
                     setWorkDays([...workDays, ...selected]);
-                    localStorage.setItem('workDays', JSON.stringify([...workDays, ...selected].map(date => date.getTime())));
+                    StorageUtils.save('workDays', [...workDays, ...selected].map(date => date.getTime()));
                     // Remove from restDays if exists
                     setRestDays(restDays.filter(
                       date => date.getTime() !== selectedTimes.includes(date.getTime())));
-                    localStorage.setItem('restDays', JSON.stringify(restDays.map(date => date.getTime())));
+                    StorageUtils.save('restDays', restDays.map(date => date.getTime()));
                   }
                   setSelected([]);
                 }}>公司办公</button>
@@ -121,11 +120,11 @@ export default function() {
                     if (selected && selected.length > 0) {
                       const selectedTimes = selected.map(item => item.getTime());
                       setRestDays([...restDays, ...selected]);
-                      localStorage.setItem('restDays', JSON.stringify([...restDays, ...selected].map(date => date.getTime())));
+                      StorageUtils.save('restDays', [...restDays, ...selected].map(date => date.getTime()));
                       // Remove from workDays if exists
                       setWorkDays(workDays.filter(
                         date => date.getTime() !== selectedTimes.includes(date.getTime())));
-                      localStorage.setItem('workDays', JSON.stringify(workDays.map(date => date.getTime())));
+                      StorageUtils.save('workDays', workDays.map(date => date.getTime()));
                     }
                     setSelected([]);
                   }}>休假</button>

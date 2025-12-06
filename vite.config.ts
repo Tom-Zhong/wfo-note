@@ -21,4 +21,9 @@ export default defineConfig({
       manifest: generateManifest,
     }),
   ],
+  resolve: {
+    alias: {
+      '@': '/src',
+    },
+  },
 });
