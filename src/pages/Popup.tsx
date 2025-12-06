@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { eachDayOfInterval, isWeekend } from 'date-fns';
@@ -33,6 +33,11 @@ export default function() {
     setRealWorkDays(workdays);
     // console.log(workdays);
   }, [selected]);
+
+  const resetCurrentMonth = useCallback(() => {
+    setWorkDays([]);
+    setRestDays([]);
+  }, []);
 
   return (
     <div>
@@ -121,7 +126,7 @@ export default function() {
                   }}>休假</button>
               </div>
             </div>
-            <button style={{width: '100%', marginBottom: '10px'}}>清除当月计划</button>
+            <button style={{width: '100%', marginBottom: '10px'}} onClick={() => resetCurrentMonth()}>清除当月计划</button>
             <button style={{width: '100%', marginBottom: '10px'}}>导入上月计划</button>
             <button style={{width: '100%'}}>导出所有计划到Excel</button>
           </div>
