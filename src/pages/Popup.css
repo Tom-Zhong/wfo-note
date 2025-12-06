@@ -1,3 +1,6 @@
+.gray-bg {
+    background-color: rgba(128, 128, 128, 0.3);
+}
 div {
     height: 100%;
     /* display: flex;
@@ -55,4 +58,10 @@ code {
   background-color: grey;
   color: white;
   border-radius: 50%;
+}
+
+.active:active {
+    position: relative;
+    top: -1px;
+    right: 1px;
 }

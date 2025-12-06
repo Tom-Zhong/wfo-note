@@ -6,6 +6,9 @@ import StorageUtils from '@/utils/StorageUtils';
 
 import "./Popup.css";
 
+import { IoIosInformationCircleOutline } from "react-icons/io";
+import { IoSettings } from "react-icons/io5";
+
 export default function() {
   const [selected, setSelected] = useState<Date[] | undefined>();
 
@@ -43,7 +46,9 @@ export default function() {
   }, []);
 
   return (
-    <div>
+    <div style={{
+      paddingBottom: '20px'
+    }}>
       <h1>WFO笔记本</h1>
       <p>记录你的WFO时间</p>
       <div
@@ -142,7 +147,17 @@ export default function() {
           </div>
         </div>
       </div>
-
+      
+      <div style={{
+        height: '30px',
+        position: 'fixed', bottom: '0', left: '0', right: '0',
+        padding: '5px 10px',
+        boxSizing: 'border-box',
+        display: 'flex',
+      }} className='gray-bg'>
+        <IoIosInformationCircleOutline style={{fontSize: '18px', marginRight: '5px', cursor: 'unset'}} className='active'/>
+        <IoSettings style={{fontSize: '18px', cursor: 'unset'}} className='active'/>
+      </div>
     </div>
   )
 }
