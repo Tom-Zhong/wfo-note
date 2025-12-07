@@ -8,6 +8,7 @@ import "./Popup.css";
 
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import { IoSettings } from "react-icons/io5";
+import { Formatter } from '@/utils/Formatter';
 
 export default function() {
   const [selected, setSelected] = useState<Date[] | undefined>();
@@ -21,13 +22,28 @@ export default function() {
   useEffect(() => {
     console.log("[WFO-Note] App runs ok!!!");
     const storedWorkDays = StorageUtils.load('workDays');
-    if (storedWorkDays) {
-      setWorkDays(storedWorkDays.map((time: number) => new Date(time)));
-    }
+    let loadedWorkDays: Date[] = [];
+    Object.keys(storedWorkDays || {}).forEach((key) => {
+      const dateStrArr = storedWorkDays[key];
+      loadedWorkDays = loadedWorkDays.concat(dateStrArr.map((date: string) => new Date(date)));
+    });
+    console.log('loadedWorkDays:', loadedWorkDays);
+    setWorkDays(loadedWorkDays);
+    // if (storedWorkDays) {
+    //   setWorkDays(storedWorkDays.map((time: number) => new Date(time)));
+    // }
     const storedRestDays = StorageUtils.load('restDays');
-    if (storedRestDays) {
-      setRestDays(storedRestDays.map((time: number) => new Date(time)));
-    }
+    console.log('storedRestDays:', storedRestDays);
+    let loadedRestDays: Date[] = [];
+    Object.keys(storedRestDays || {}).forEach((key) => {
+      const dateStrArr = storedRestDays[key];
+      loadedRestDays = loadedRestDays.concat(dateStrArr.map((date: string) => new Date(date)));
+    });
+    console.log('loadedRestDays:', loadedRestDays);
+    setRestDays(loadedRestDays);
+    // if (storedRestDays) {
+    //   setRestDays(storedRestDays.map((time: number) => new Date(time)));
+    // }
 
     const start = new Date();
     start.setDate(1);
@@ -41,8 +57,8 @@ export default function() {
   const resetCurrentMonth = useCallback(() => {
     setWorkDays([]);
     setRestDays([]);
-    localStorage.setItem('workDays', JSON.stringify([]));
-    localStorage.setItem('restDays', JSON.stringify([]));
+    localStorage.setItem('workDays', JSON.stringify({}));
+    localStorage.setItem('restDays', JSON.stringify({}));
   }, []);
 
   return (
@@ -113,26 +129,25 @@ export default function() {
               <div className='flex-column' style={{flexDirection: 'row'}}>
                 <button style={{width: '100%', marginBottom: '10px'}} onClick={() => {
                   if (selected && selected.length > 0) {
-                    const selectedTimes = selected.map(item => item.getTime());
+                    const selectedTimes = selected.map(item => Formatter.formatDateToString(item));
                     setWorkDays([...workDays, ...selected]);
-                    StorageUtils.save('workDays', [...workDays, ...selected].map(date => date.getTime()));
-                    // Remove from restDays if exists
+                    StorageUtils.checkExistAndSave('workDays', [...workDays, ...selected]);
+                    console.log('selectedTimes:', restDays, selectedTimes);
                     setRestDays(restDays.filter(
-                      date => date.getTime() !== selectedTimes.includes(date.getTime())));
-                    StorageUtils.save('restDays', restDays.map(date => date.getTime()));
+                      date => !selectedTimes.includes(Formatter.formatDateToString(date))));
+                    StorageUtils.checkExistAndRemove('restDays', selected);
                   }
                   setSelected([]);
                 }}>公司办公</button>
                 <button style={{width: '100%', marginBottom: '10px'}}
                   onClick={() => {
                     if (selected && selected.length > 0) {
-                      const selectedTimes = selected.map(item => item.getTime());
+                      const selectedTimes = selected.map(item => Formatter.formatDateToString(item));
                       setRestDays([...restDays, ...selected]);
-                      StorageUtils.save('restDays', [...restDays, ...selected].map(date => date.getTime()));
-                      // Remove from workDays if exists
+                      StorageUtils.checkExistAndSave('restDays', [...restDays, ...selected]);
                       setWorkDays(workDays.filter(
-                        date => date.getTime() !== selectedTimes.includes(date.getTime())));
-                      StorageUtils.save('workDays', workDays.map(date => date.getTime()));
+                        date => !selectedTimes.includes(Formatter.formatDateToString(date))));
+                      StorageUtils.checkExistAndRemove('workDays', selected);
                     }
                     setSelected([]);
                   }}>休假</button>
