@@ -84,11 +84,27 @@ export default function() {
   }, [realWorkDays]);
 
   const resetCurrentMonth = useCallback(() => {
-    setWorkDays([]);
-    setRestDays([]);
-    localStorage.setItem('workDays', JSON.stringify({}));
-    localStorage.setItem('restDays', JSON.stringify({}));
-  }, []);
+    const storedWorkDays = StorageUtils.load('workDays');
+    const storedRestDays = StorageUtils.load('restDays');
+
+    const year = currentMonth?.getFullYear();
+    const month = currentMonth ? currentMonth.getMonth() + 1 : 0;
+
+    if (storedWorkDays && storedWorkDays[`${year}-${month}`]) {
+      delete storedWorkDays[`${year}-${month}`];
+      StorageUtils.save('workDays', storedWorkDays);
+    }
+    if (storedRestDays && storedRestDays[`${year}-${month}`]) {
+      delete storedRestDays[`${year}-${month}`];
+      StorageUtils.save('restDays', storedRestDays);
+    }
+    setWorkDays(workDays.filter(date => {
+      return !(date.getFullYear() === year && (date.getMonth() + 1) === month);
+    }));
+    setRestDays(restDays.filter(date => {
+      return !(date.getFullYear() === year && (date.getMonth() + 1) === month);
+    }));
+  }, [currentMonth, workDays, restDays]);
 
   return (
     <div style={{}}>
