@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { DayPicker } from "react-day-picker";
+import { zhCN } from "react-day-picker/locale";
 import "react-day-picker/style.css";
 import { eachDayOfInterval, isWeekend } from 'date-fns';
 import StorageUtils from '@/utils/StorageUtils';
@@ -122,7 +123,8 @@ export default function() {
           flexDirection: 'row',
         }}>
           <div style={{marginRight: '20px'}}>
-            <h2>选择日期</h2>
+            <h2 style={{marginBottom: '5px'}}>选择日期</h2>
+            <p>(选择您计划的工作日或休息日)</p>
             <DayPicker
               animate
               mode="multiple"
@@ -143,6 +145,8 @@ export default function() {
               }}
               onSelect={setSelected}
               onMonthChange={(month) => setCurrentMonth(month)}
+              locale={zhCN}
+              weekStartsOn={0}
             />
             <p>(当前月份是 {currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}, 共有{realWorkDays}个工作日)</p>
             <div className='flex-row' style={{  width: '100%', gap: '10px', marginTop: '20px' }}>
