@@ -30,7 +30,7 @@ export default function() {
       const dateStrArr = storedWorkDays[key];
       loadedWorkDays = loadedWorkDays.concat(dateStrArr.map((date: string) => new Date(date)));
     });
-    console.log('loadedWorkDays:', loadedWorkDays);
+    // console.log('loadedWorkDays:', loadedWorkDays);
     setWorkDays(loadedWorkDays);
     // if (storedWorkDays) {
     //   setWorkDays(storedWorkDays.map((time: number) => new Date(time)));
@@ -42,8 +42,9 @@ export default function() {
       const dateStrArr = storedRestDays[key];
       loadedRestDays = loadedRestDays.concat(dateStrArr.map((date: string) => new Date(date)));
     });
-    console.log('loadedRestDays:', loadedRestDays);
+    // console.log('loadedRestDays:', loadedRestDays);
     setRestDays(loadedRestDays);
+    setCurrentMonth(new Date());
     // if (storedRestDays) {
     //   setRestDays(storedRestDays.map((time: number) => new Date(time)));
     // }
@@ -72,7 +73,7 @@ export default function() {
       setCurrentMonthRestDays(currentMonthRestDays.length);
       console.log('storedRestDays:', storedRestDays);
     }
-  }, [currentMonth]);
+  }, [currentMonth, workDays, restDays]);
 
   useEffect(() => {
     console.log('currentMonthWorkDays', currentMonthWorkDays);
@@ -93,7 +94,8 @@ export default function() {
     <div style={{}}>
       <div
         style={{
-          padding: '10px'
+          padding: '10px',
+          paddingBottom: '30px'
         }}
       >
         <h1>WFO笔记本</h1>
@@ -198,7 +200,7 @@ export default function() {
       
       <div style={{
         height: '30px',
-        // position: 'fixed', bottom: '0', left: '0', right: '0',
+        position: 'fixed', bottom: '0', left: '0', right: '0',
         padding: '5px 10px',
         boxSizing: 'border-box',
         display: 'flex',
