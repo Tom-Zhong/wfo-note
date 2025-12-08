@@ -17,7 +17,7 @@ export default function() {
   const [workDays, setWorkDays] = useState<any[]>([]);
   const [restDays, setRestDays] = useState<any[]>([]);
   const [realWorkDays, setRealWorkDays] = useState<number>(0);
-  const [currentMonth, setCurrentMonth] = useState<Date>();
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0);
   const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0);
   // console.log('workDays:', workDays);
@@ -105,6 +105,59 @@ export default function() {
     setRestDays(restDays.filter(date => {
       return !(date.getFullYear() === year && (date.getMonth() + 1) === month);
     }));
+  }, [currentMonth, workDays, restDays]);
+
+  const importLastMonthPlan = useCallback(() => {
+    const lastMonthDate = new Date(currentMonth);
+    lastMonthDate.setMonth(currentMonth.getMonth() - 1);
+    const year = lastMonthDate.getFullYear();
+    const month = lastMonthDate.getMonth() + 1;
+    // get current month real days
+    const currentMonthRealDays = eachDayOfInterval({
+      start: new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1),
+      end: new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
+    });
+    const currentMonthRealDaysLength = currentMonthRealDays.length;
+
+    const storedWorkDays = StorageUtils.load('workDays');
+    const lastMonthWorkDays = storedWorkDays[`${year}-${month}`] || [];
+    // console.log('lastMonthWorkDays:', lastMonthWorkDays);
+
+    const storedRestDays = StorageUtils.load('restDays');
+    const lastMonthRestDays = storedRestDays[`${year}-${month}`] || [];
+    // console.log('lastMonthRestDays:', lastMonthRestDays);
+
+    const currentYear = currentMonth?.getFullYear();
+    const currentMonthNum = currentMonth ? currentMonth.getMonth() + 1 : 0;
+
+    const newWorkDays = lastMonthWorkDays.map((dateStr: string) => {
+      const date = new Date(dateStr);
+      const theBigestDay = currentMonthRealDaysLength;
+      if (date.getDate() > theBigestDay) {
+        return new Date(currentYear!, currentMonthNum - 1, theBigestDay);
+      }
+      return new Date(currentYear!, currentMonthNum - 1, date.getDate());
+    }).filter((date: Date) => {
+      // filter weekend dates
+      return !isWeekend(date);
+    });
+    const newRestDays = lastMonthRestDays.map((dateStr: string) => {
+      const date = new Date(dateStr);
+      const theBigestDay = currentMonthRealDaysLength;
+      if (date.getDate() > theBigestDay) {
+        return new Date(currentYear!, currentMonthNum - 1, theBigestDay);
+      }
+      return new Date(currentYear!, currentMonthNum - 1, date.getDate());
+    }).filter((date: Date) => {
+      // filter weekend dates
+      return !isWeekend(date);
+    });
+
+    setWorkDays([...workDays, ...newWorkDays]);
+    StorageUtils.checkExistAndSave('workDays', [...workDays, ...newWorkDays]);
+
+    setRestDays([...restDays, ...newRestDays]);
+    StorageUtils.checkExistAndSave('restDays', [...restDays, ...newRestDays]);
   }, [currentMonth, workDays, restDays]);
 
   return (
@@ -208,7 +261,7 @@ export default function() {
                 </div>
               </div>
               <button style={{width: '100%', marginBottom: '10px'}} onClick={() => resetCurrentMonth()}>清除当月计划</button>
-              <button style={{width: '100%', marginBottom: '10px'}}>导入上月计划</button>
+              <button style={{width: '100%', marginBottom: '10px'}} onClick={() => importLastMonthPlan()}>导入上月计划</button>
               <button style={{width: '100%'}}>导出所有计划到Excel</button>
               <p style={{marginTop: '15px', marginBottom: '0px'}}>* 仅支持追溯过去三个月和计划未来三月的WFO记录</p>
               <p style={{marginBottom: '0px'}}>* 请根据实际工作安排合理安排WFO时间</p>
