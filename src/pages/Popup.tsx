@@ -258,6 +258,19 @@ export default function() {
                       }
                       setSelected([]);
                     }}>休假</button>
+                    <button style={{width: '100%', marginBottom: '10px'}}
+                    onClick={() => {
+                      if (selected && selected.length > 0) {
+                        const selectedTimes = selected.map(item => Formatter.formatDateToString(item));
+                        setWorkDays(workDays.filter(
+                          date => !selectedTimes.includes(Formatter.formatDateToString(date))));
+                        StorageUtils.checkExistAndRemove('workDays', selected);
+                        setRestDays(restDays.filter(
+                          date => !selectedTimes.includes(Formatter.formatDateToString(date))));
+                        StorageUtils.checkExistAndRemove('restDays', selected);
+                      }
+                      setSelected([]);
+                    }}>清除选中日期</button>
                 </div>
               </div>
               <button style={{width: '100%', marginBottom: '10px'}} onClick={() => resetCurrentMonth()}>清除当月计划</button>
