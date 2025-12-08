@@ -3,6 +3,7 @@ import { DayPicker } from "react-day-picker";
 import { zhCN } from "react-day-picker/locale";
 import "react-day-picker/style.css";
 import { eachDayOfInterval, isWeekend } from 'date-fns';
+import { utils, writeFile } from 'xlsx';
 import StorageUtils from '@/utils/StorageUtils';
 
 import "./Popup.css";
@@ -160,6 +161,31 @@ export default function() {
     StorageUtils.checkExistAndSave('restDays', [...restDays, ...newRestDays]);
   }, [currentMonth, workDays, restDays]);
 
+  const exportToExcel = useCallback(() => {
+    const storedWorkDays = StorageUtils.load('workDays');
+    const storedRestDays = StorageUtils.load('restDays');
+
+    const data: any[] = [];
+    const months = new Set<string>([
+      ...Object.keys(storedWorkDays || {}),
+      ...Object.keys(storedRestDays || {})
+    ]);
+    months.forEach((Month) => {
+      const workDaysArr = storedWorkDays[Month] || [];
+      const restDaysArr = storedRestDays[Month] || [];
+      data.push({
+        Month,
+        WorkDays: workDaysArr.join(", "),
+        RestDays: restDaysArr.join(", ")
+      });
+    });
+
+    const worksheet = utils.json_to_sheet(data);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "WFO Plan");
+    writeFile(workbook, "WFO_Plan.xlsx");
+  }, []);
+
   return (
     <div style={{}}>
       <div
@@ -275,7 +301,7 @@ export default function() {
               </div>
               <button style={{width: '100%', marginBottom: '10px'}} onClick={() => resetCurrentMonth()}>清除当月计划</button>
               <button style={{width: '100%', marginBottom: '10px'}} onClick={() => importLastMonthPlan()}>导入上月计划</button>
-              <button style={{width: '100%'}}>导出所有计划到Excel</button>
+              <button style={{width: '100%'}} onClick={() => exportToExcel()}>导出所有计划到Excel</button>
               <p style={{marginTop: '15px', marginBottom: '0px'}}>* 仅支持追溯过去三个月和计划未来三月的WFO记录</p>
               <p style={{marginBottom: '0px'}}>* 请根据实际工作安排合理安排WFO时间</p>
               <p style={{marginTop: '0px'}}>* 本插件的WFO提示仅供参考，实际以公司的WFO为准</p>
