@@ -331,8 +331,8 @@ export default function() {
         alignItems: 'center',
         gap: '5px'
       }} className='gray-bg' onMouseOver={(target) => showActiveMenu(target)} onMouseLeave={() => setActiveMenu('')}>
-        <IoIosInformationCircleOutline style={{fontSize: '18px', marginRight: '0px', cursor: 'unset'}} className='active' name='About'/>
-        <IoSettings style={{fontSize: '18px', cursor: 'unset'}} className='active' name='Settings'/>
+        <IoIosInformationCircleOutline style={{fontSize: '18px', marginRight: '0px', cursor: 'unset'}} className='active' name='关于'/>
+        <IoSettings style={{fontSize: '18px', cursor: 'unset'}} className='active' name='设置'/>
         <h4>{activeMenu}</h4>
       </div>
     </div>
