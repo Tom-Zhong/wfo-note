@@ -12,7 +12,7 @@ import { IoIosInformationCircleOutline } from "react-icons/io";
 import { IoSettings } from "react-icons/io5";
 import { Formatter } from '@/utils/Formatter';
 
-export default function() {
+export default function () {
   const [selected, setSelected] = useState<Date[] | undefined>();
 
   const [workDays, setWorkDays] = useState<any[]>([]);
@@ -22,6 +22,7 @@ export default function() {
   const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0);
   const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0);
 
+  const [showView, setShowView] = useState<number>(1); // 1: main, 2: about, 3: settings
   const [activeMenu, setActiveMenu] = useState<string>('');
   // console.log('workDays:', workDays);
   // console.log('restDays:', restDays);
@@ -203,125 +204,158 @@ export default function() {
       <div
         style={{
           padding: '10px',
-          paddingBottom: '30px'
+          paddingBottom: '30px',
         }}
       >
-        <h1>WFO笔记本</h1>
-        <p>记录你的WFO时间</p>
         <div
-        className='flex-column'
-        style={{
-          flexDirection: 'row',
-        }}>
-          <div style={{marginRight: '20px'}}>
-            <h2 style={{marginBottom: '5px'}}>选择日期</h2>
-            <p>(选择您计划的工作日或休息日)</p>
-            <DayPicker
-              animate
-              mode="multiple"
-              selected={selected}
-              defaultMonth={new Date()}
-              startMonth={new Date(new Date().getFullYear(), new Date().getMonth() - 3)}
-              endMonth={new Date(new Date().getFullYear(), new Date().getMonth() + 3)}
-              modifiers={{
-                workDays: workDays,
-                restDays: restDays,
-              }}
-              modifiersClassNames={{
-                workDays: "my-booked-class",
-                restDays: "my-booked-class1",
-              }}
-              disabled={{
-                dayOfWeek: [0, 6],
-              }}
-              onSelect={setSelected}
-              onMonthChange={(month) => setCurrentMonth(month)}
-              locale={zhCN}
-              weekStartsOn={0}
-            />
-            <p>(当前月份是 {currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}, 共有{realWorkDays}个工作日)</p>
-            <div className='flex-row' style={{  width: '100%', gap: '10px', marginTop: '20px' }}>
-              <div className='flex-row' style={{ alignItems: 'center', gap: '5px' }}>
-                <div style={{ width: '20px', height: '20px', backgroundColor: 'green'}}></div>
-                <span>公司办公</span>
-              </div>
-              <div className='flex-row' style={{ alignItems: 'center', gap: '5px' }}>
-                <div style={{ width: '20px', height: '20px', backgroundColor: 'grey'}}></div>
-                <span>休假</span>
-              </div>
-            </div>
-            <h3 style={{fontSize: '20px'}}>
-              您{currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}的WFO已达到
-              { Math.floor(currentMonthWorkDays / (realWorkDays - currentMonthRestDays) * 100)} %
-              </h3>
-          </div>
-          <div style={{marginRight: '20px', flexGrow: 1}}>
-            <h2 style={{
-              textAlign: 'center'
-            }}>菜单</h2>
-            <div>
-              <div style={{
-                marginBottom: '20px',
-                border: '1px solid #ccc',
-                padding: '10px',
-                borderRadius: '5px'
-                }}>
-                <div style={{marginBottom: '10px', fontSize: '16px'}}>
-                  <strong>已选择日期：</strong>
-                  <span>{selected ? selected.map(date => date.toLocaleDateString()).join(", ") : "无"}</span>
+          style={{
+            display: showView === 1 ? 'block' : 'none',
+          }}
+        >
+          <h1>WFO笔记本</h1>
+          <p>记录你的WFO时间</p>
+          <div
+            className='flex-column'
+            style={{
+              flexDirection: 'row',
+            }}>
+            <div style={{ marginRight: '20px' }}>
+              <h2 style={{ marginBottom: '5px' }}>选择日期</h2>
+              <p>(选择您计划的工作日或休息日)</p>
+              <DayPicker
+                animate
+                mode="multiple"
+                selected={selected}
+                defaultMonth={new Date()}
+                startMonth={new Date(new Date().getFullYear(), new Date().getMonth() - 3)}
+                endMonth={new Date(new Date().getFullYear(), new Date().getMonth() + 3)}
+                modifiers={{
+                  workDays: workDays,
+                  restDays: restDays,
+                }}
+                modifiersClassNames={{
+                  workDays: "my-booked-class",
+                  restDays: "my-booked-class1",
+                }}
+                disabled={{
+                  dayOfWeek: [0, 6],
+                }}
+                onSelect={setSelected}
+                onMonthChange={(month) => setCurrentMonth(month)}
+                locale={zhCN}
+                weekStartsOn={0}
+              />
+              <p>(当前月份是 {currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}, 共有{realWorkDays}个工作日)</p>
+              <div className='flex-row' style={{ width: '100%', gap: '10px', marginTop: '20px' }}>
+                <div className='flex-row' style={{ alignItems: 'center', gap: '5px' }}>
+                  <div style={{ width: '20px', height: '20px', backgroundColor: 'green' }}></div>
+                  <span>公司办公</span>
                 </div>
-                <div style={{marginBottom: '10px', fontSize: '16px'}}><span>我准备：</span></div>
-                <div className='flex-column' style={{flexDirection: 'row'}}>
-                  <button style={{width: '100%', marginBottom: '10px'}} onClick={() => {
-                    if (selected && selected.length > 0) {
-                      const selectedTimes = selected.map(item => Formatter.formatDateToString(item));
-                      setWorkDays([...workDays, ...selected]);
-                      StorageUtils.checkExistAndSave('workDays', [...workDays, ...selected]);
-                      console.log('selectedTimes:', restDays, selectedTimes);
-                      setRestDays(restDays.filter(
-                        date => !selectedTimes.includes(Formatter.formatDateToString(date))));
-                      StorageUtils.checkExistAndRemove('restDays', selected);
-                    }
-                    setSelected([]);
-                  }}>公司办公</button>
-                  <button style={{width: '100%', marginBottom: '10px'}}
-                    onClick={() => {
+                <div className='flex-row' style={{ alignItems: 'center', gap: '5px' }}>
+                  <div style={{ width: '20px', height: '20px', backgroundColor: 'grey' }}></div>
+                  <span>休假</span>
+                </div>
+              </div>
+              <h3 style={{ fontSize: '20px' }}>
+                您{currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}的WFO已达到
+                {Math.floor(currentMonthWorkDays / (realWorkDays - currentMonthRestDays) * 100)} %
+              </h3>
+            </div>
+            <div style={{ marginRight: '20px', flexGrow: 1 }}>
+              <h2 style={{
+                textAlign: 'center'
+              }}>菜单</h2>
+              <div>
+                <div style={{
+                  marginBottom: '20px',
+                  border: '1px solid #ccc',
+                  padding: '10px',
+                  borderRadius: '5px'
+                }}>
+                  <div style={{ marginBottom: '10px', fontSize: '16px' }}>
+                    <strong>已选择日期：</strong>
+                    <span>{selected ? selected.map(date => date.toLocaleDateString()).join(", ") : "无"}</span>
+                  </div>
+                  <div style={{ marginBottom: '10px', fontSize: '16px' }}><span>我准备：</span></div>
+                  <div className='flex-column' style={{ flexDirection: 'row' }}>
+                    <button style={{ width: '100%', marginBottom: '10px' }} onClick={() => {
                       if (selected && selected.length > 0) {
                         const selectedTimes = selected.map(item => Formatter.formatDateToString(item));
-                        setRestDays([...restDays, ...selected]);
-                        StorageUtils.checkExistAndSave('restDays', [...restDays, ...selected]);
-                        setWorkDays(workDays.filter(
-                          date => !selectedTimes.includes(Formatter.formatDateToString(date))));
-                        StorageUtils.checkExistAndRemove('workDays', selected);
-                      }
-                      setSelected([]);
-                    }}>休假</button>
-                    <button style={{width: '100%', marginBottom: '10px'}}
-                    onClick={() => {
-                      if (selected && selected.length > 0) {
-                        const selectedTimes = selected.map(item => Formatter.formatDateToString(item));
-                        setWorkDays(workDays.filter(
-                          date => !selectedTimes.includes(Formatter.formatDateToString(date))));
-                        StorageUtils.checkExistAndRemove('workDays', selected);
+                        setWorkDays([...workDays, ...selected]);
+                        StorageUtils.checkExistAndSave('workDays', [...workDays, ...selected]);
+                        console.log('selectedTimes:', restDays, selectedTimes);
                         setRestDays(restDays.filter(
                           date => !selectedTimes.includes(Formatter.formatDateToString(date))));
                         StorageUtils.checkExistAndRemove('restDays', selected);
                       }
                       setSelected([]);
-                    }}>清除选中日期</button>
+                    }}>公司办公</button>
+                    <button style={{ width: '100%', marginBottom: '10px' }}
+                      onClick={() => {
+                        if (selected && selected.length > 0) {
+                          const selectedTimes = selected.map(item => Formatter.formatDateToString(item));
+                          setRestDays([...restDays, ...selected]);
+                          StorageUtils.checkExistAndSave('restDays', [...restDays, ...selected]);
+                          setWorkDays(workDays.filter(
+                            date => !selectedTimes.includes(Formatter.formatDateToString(date))));
+                          StorageUtils.checkExistAndRemove('workDays', selected);
+                        }
+                        setSelected([]);
+                      }}>休假</button>
+                    <button style={{ width: '100%', marginBottom: '10px' }}
+                      onClick={() => {
+                        if (selected && selected.length > 0) {
+                          const selectedTimes = selected.map(item => Formatter.formatDateToString(item));
+                          setWorkDays(workDays.filter(
+                            date => !selectedTimes.includes(Formatter.formatDateToString(date))));
+                          StorageUtils.checkExistAndRemove('workDays', selected);
+                          setRestDays(restDays.filter(
+                            date => !selectedTimes.includes(Formatter.formatDateToString(date))));
+                          StorageUtils.checkExistAndRemove('restDays', selected);
+                        }
+                        setSelected([]);
+                      }}>清除选中日期</button>
+                  </div>
                 </div>
+                <button style={{ width: '100%', marginBottom: '10px' }} onClick={() => resetCurrentMonth()}>清除当月计划</button>
+                <button style={{ width: '100%', marginBottom: '10px' }} onClick={() => importLastMonthPlan()}>导入上月计划</button>
+                <button style={{ width: '100%' }} onClick={() => exportToExcel()}>导出所有计划到Excel</button>
+                <p style={{ marginTop: '15px', marginBottom: '0px' }}>* 仅支持追溯过去三个月和计划未来三月的WFO记录</p>
+                <p style={{ marginBottom: '0px' }}>* 请根据实际工作安排合理安排WFO时间</p>
+                <p style={{ marginTop: '0px' }}>* 本插件的WFO提示仅供参考，实际以公司的WFO为准</p>
               </div>
-              <button style={{width: '100%', marginBottom: '10px'}} onClick={() => resetCurrentMonth()}>清除当月计划</button>
-              <button style={{width: '100%', marginBottom: '10px'}} onClick={() => importLastMonthPlan()}>导入上月计划</button>
-              <button style={{width: '100%'}} onClick={() => exportToExcel()}>导出所有计划到Excel</button>
-              <p style={{marginTop: '15px', marginBottom: '0px'}}>* 仅支持追溯过去三个月和计划未来三月的WFO记录</p>
-              <p style={{marginBottom: '0px'}}>* 请根据实际工作安排合理安排WFO时间</p>
-              <p style={{marginTop: '0px'}}>* 本插件的WFO提示仅供参考，实际以公司的WFO为准</p>
             </div>
           </div>
         </div>
+
+
+        <div
+          style={{
+            display: showView === 2 ? 'block' : 'none',
+          }}
+        >
+          <h1 style={{marginBottom: '10px'}}>关于 WFO笔记本</h1>
+          <p>版本：v1.0.0</p>
+          <p>作者：Tom G Y Zung</p>
+          <p>感谢您使用WFO笔记本！这个插件旨在帮助您更好地管理和记录您的远程办公时间。</p>
+          <p>如果您有任何建议或反馈，欢迎通过以下方式联系我：</p>
+          <ul>
+            <li>电子邮件：<a href="mailto:81437455@qq.com">81437455@qq.com</a></li>
+          </ul>
+          <button onClick={() => setShowView(1)} style={{marginBottom: '15px'}}>返回主界面</button>
+        </div>
+
+        <div
+          style={{
+            display: showView === 3 ? 'block' : 'none',
+          }}
+        >
+          <h1 style={{marginBottom: '10px'}}>设置</h1>
+          <p>目前暂无可配置选项，敬请期待！</p>
+          <button onClick={() => setShowView(1)} style={{marginBottom: '15px'}}>返回主界面</button>
+        </div>
       </div>
-      
+
       <div style={{
         height: '30px',
         position: 'fixed', bottom: '0', left: '0', right: '0',
@@ -331,8 +365,8 @@ export default function() {
         alignItems: 'center',
         gap: '5px'
       }} className='gray-bg' onMouseOver={(target) => showActiveMenu(target)} onMouseLeave={() => setActiveMenu('')}>
-        <IoIosInformationCircleOutline style={{fontSize: '18px', marginRight: '0px', cursor: 'unset'}} className='active' name='关于'/>
-        <IoSettings style={{fontSize: '18px', cursor: 'unset'}} className='active' name='设置'/>
+        <IoIosInformationCircleOutline style={{ fontSize: '18px', marginRight: '0px', cursor: 'unset' }} className='active' name='关于' onClick={() => setShowView(2)} />
+        <IoSettings style={{ fontSize: '18px', cursor: 'unset' }} className='active' name='设置' onClick={() => setShowView(3)} />
         <h4>{activeMenu}</h4>
       </div>
     </div>
