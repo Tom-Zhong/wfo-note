@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { DayPicker } from "react-day-picker";
-import { zhCN } from "react-day-picker/locale";
+import { el, zhCN } from "react-day-picker/locale";
 import "react-day-picker/style.css";
 import { eachDayOfInterval, isWeekend } from 'date-fns';
 import { utils, writeFile } from 'xlsx';
@@ -21,6 +21,8 @@ export default function() {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0);
   const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0);
+
+  const [activeMenu, setActiveMenu] = useState<string>('');
   // console.log('workDays:', workDays);
   // console.log('restDays:', restDays);
 
@@ -186,6 +188,16 @@ export default function() {
     writeFile(workbook, "WFO_Plan.xlsx");
   }, []);
 
+  const showActiveMenu = useCallback((element: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const target = element.target as HTMLElement;
+    // console.log(target);
+    if (target?.classList.contains('active')) {
+      // console.log('hovered element:', target);
+      setActiveMenu(target.getAttribute('name') || '');
+      return;
+    }
+  }, []);
+
   return (
     <div style={{}}>
       <div
@@ -316,9 +328,12 @@ export default function() {
         padding: '5px 10px',
         boxSizing: 'border-box',
         display: 'flex',
-      }} className='gray-bg'>
-        <IoIosInformationCircleOutline style={{fontSize: '18px', marginRight: '5px', cursor: 'unset'}} className='active'/>
-        <IoSettings style={{fontSize: '18px', cursor: 'unset'}} className='active'/>
+        alignItems: 'center',
+        gap: '5px'
+      }} className='gray-bg' onMouseOver={(target) => showActiveMenu(target)} onMouseLeave={() => setActiveMenu('')}>
+        <IoIosInformationCircleOutline style={{fontSize: '18px', marginRight: '0px', cursor: 'unset'}} className='active' name='About'/>
+        <IoSettings style={{fontSize: '18px', cursor: 'unset'}} className='active' name='Settings'/>
+        <h4>{activeMenu}</h4>
       </div>
     </div>
   )
