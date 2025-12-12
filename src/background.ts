@@ -3,6 +3,25 @@ import { Formatter } from "./utils/Formatter";
 
 const isDev = process.env.NODE_ENV === 'development';
 
+//  创建并且按指定秒数消失notification
+function createAutoClosingNotification(id: string, options: any, timeoutMs: number = 60000) {
+  // @ts-ignore
+  self.registration.showNotification(options.title, {
+    ...options,
+    tag: id // Use tag to identify the notification
+  });
+  
+  // Automatically close the notification after timeoutMs milliseconds
+  setTimeout(() => {
+    // @ts-ignore
+    self.registration.getNotifications({tag: id}).then(notifications => {
+      notifications.forEach((notification: any) => {
+        notification.close();
+      });
+    });
+  }, timeoutMs);
+}
+
 // 监听 popup 发送的消息，立即弹通知
 browser.runtime.onMessage.addListener(async (message) => {
   if (message && message.type === 'storageMode') {
@@ -86,7 +105,20 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
     ) {
       // 创建带按钮的通知
       // @ts-ignore
-      self.registration.showNotification('WFO提醒', {
+      // self.registration.showNotification('WFO提醒', {
+      //   title: 'WFO提醒',
+      //   body: `今天（${Formatter.formatDateToString(today)}）您有计划去公司办公！ 你今天有WFO吗？`,
+      //   icon: '/icon/48.png',
+      //   actions: [
+      //     { action: 'confirmWFO', title: '有' },
+      //     { action: 'notWFOThisWeek', title: '本周不去公司' }
+      //   ],
+      //   requireInteraction: true,
+      //   tag: 'wfo-action',
+      // });
+
+      const notificationId = 'wfo-reminder-' + Date.now();
+      const notificationOptions = {
         title: 'WFO提醒',
         body: `今天（${Formatter.formatDateToString(today)}）您有计划去公司办公！ 你今天有WFO吗？`,
         icon: '/icon/48.png',
@@ -95,7 +127,9 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
           { action: 'notWFOThisWeek', title: '本周不去公司' }
         ],
         requireInteraction: true
-      });
+      };
+
+      createAutoClosingNotification(notificationId, notificationOptions, 10000);
 
       // browser.notifications.create('wfo-action', {
       //   type: 'basic',
@@ -121,15 +155,15 @@ browser.notifications.onClosed.addListener(async (id) => {
 });
 
 // 关闭通知
-browser.notifications.onClicked.addListener((id) => {
-  // console.log('Notification clicked:', id);
-  browser.notifications.clear(id);
-});
+// browser.notifications.onClicked.addListener((id) => {
+//   // console.log('Notification clicked:', id);
+//   browser.notifications.clear(id);
+// });
 
-browser.notifications.onButtonClicked.addListener((id, buttonIndex) => {
-  // console.log('Notification button clicked:', id, buttonIndex);
-  browser.notifications.clear(id);
-});
+// browser.notifications.onButtonClicked.addListener((id, buttonIndex) => {
+//   // console.log('Notification button clicked:', id, buttonIndex);
+//   browser.notifications.clear(id);
+// });
 
 self.addEventListener('notificationclick', async (event) => {
   // console.log('Service Worker Notification clicked:', event);
