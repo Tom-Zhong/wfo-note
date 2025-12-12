@@ -2,8 +2,11 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import Popup from "./pages/Popup";
 
-ReactDOM.createRoot(document.body).render(
+const container = document.createElement('div');
+document.body.appendChild(container);
+
+ReactDOM.createRoot(container).render(
   <React.StrictMode>
-    <Popup />
+	<Popup />
   </React.StrictMode>
 );
