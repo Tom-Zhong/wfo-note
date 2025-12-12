@@ -51,7 +51,7 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
     const alertDay: string = alertDayResult.alertDay || '';
     // console.log('Last alert day:', alertDay);
 
-    if (alertDay === Formatter.formatDateToString(today)) {
+    if (alertDay === Formatter.formatDateToString(today) && !isDev) {
       // console.log('Already alerted for today:', Formatter.formatDateToString(today));
       return;
     }
