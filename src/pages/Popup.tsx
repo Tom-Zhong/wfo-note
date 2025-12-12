@@ -32,6 +32,8 @@ function autoClearUnusedData () {
     StorageUtils.save('workDays', storedWorkDays);
     // console.log('autoClearUnusedData done', `${year}-${month}`);
   }
+
+  console.log('[WFO-Note] Auto Clear UnusedData Done');
 }
 
 export default function () {
@@ -79,7 +81,7 @@ export default function () {
     //   setWorkDays(storedWorkDays.map((time: number) => new Date(time)));
     // }
     const storedRestDays = StorageUtils.load('restDays');
-    console.log('storedRestDays:', storedRestDays);
+    // console.log('storedRestDays:', storedRestDays);
     let loadedRestDays: Date[] = [];
     Object.keys(storedRestDays || {}).forEach((key) => {
       const dateStrArr = storedRestDays[key];
@@ -110,7 +112,7 @@ export default function () {
       if (storedWorkDays) {
         const currentMonthWorkDays = storedWorkDays[`${year}-${month}`] || [];
         setCurrentMonthWorkDays(currentMonthWorkDays.length);
-        console.log('storedWorkDays:', storedWorkDays);
+        // console.log('storedWorkDays:', storedWorkDays);
       }
 
 
@@ -118,7 +120,7 @@ export default function () {
       if (storedRestDays) {
         const currentMonthRestDays = storedRestDays[`${year}-${month}`] || [];
         setCurrentMonthRestDays(currentMonthRestDays.length);
-        console.log('storedRestDays:', storedRestDays);
+        // console.log('storedRestDays:', storedRestDays);
       }
     }
   }, [currentMonth, workDays, restDays]);
@@ -143,11 +145,11 @@ export default function () {
   }, []);
 
   useEffect(() => {
-    console.log('currentMonthWorkDays', currentMonthWorkDays);
+    // console.log('currentMonthWorkDays', currentMonthWorkDays);
   }, [currentMonthWorkDays]);
 
   useEffect(() => {
-    console.log('realWorkDays', realWorkDays);
+    // console.log('realWorkDays', realWorkDays);
     // 将当前全月工作日数和休息日数传给background.ts
     Browser.runtime.sendMessage({ type: "storageCurrentUserWorkdays", payload: { 
       currentUserWorkdays: realWorkDays - currentMonthRestDays
@@ -365,7 +367,7 @@ export default function () {
                         const selectedTimes = selected.map(item => Formatter.formatDateToString(item));
                         setWorkDays([...workDays, ...selected]);
                         StorageUtils.checkExistAndSave('workDays', [...workDays, ...selected]);
-                        console.log('selectedTimes:', restDays, selectedTimes);
+                        // console.log('selectedTimes:', restDays, selectedTimes);
                         setRestDays(restDays.filter(
                           date => !selectedTimes.includes(Formatter.formatDateToString(date))));
                         StorageUtils.checkExistAndRemove('restDays', selected);
