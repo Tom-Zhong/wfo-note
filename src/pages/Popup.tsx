@@ -24,7 +24,7 @@ export default function () {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date()); // 当前选择的月份
   const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0); // 当前月份已设定的工作日数量
   const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0); // 当前月份已设定的休息日数量
-  const [alertMode, setAlertMode] = useState<string>(StorageUtils.load('alertMode') || 'flexible'); // strict, flexible, silent
+  const [alertMode, setAlertMode] = useState<string>(StorageUtils.load('alertMode') || 'silent'); // strict, flexible, silent
   const [alertModeErrState, setAlertModeErrState] = useState<string>('');
 
   const [showView, setShowView] = useState<number>(1); // 1: main, 2: about, 3: settings
