@@ -15,8 +15,14 @@ body.dark-mode input, .dark-mode select, .dark-mode textarea, .dark-mode .my-boo
 body.dark-mode .my-booked-class {
   background-color: #2e8b57 !important;
 }
+body.dark-mode .my-booked-class > button {
+  background-color: transparent!important;
+}
 body.dark-mode .my-booked-class1 {
   background-color: #555 !important;
+}
+body.dark-mode .my-booked-class1 > button {
+  background-color: transparent!important;
 }
 
 body.light-mode, .light-mode {
@@ -36,8 +42,17 @@ body.light-mode input, .light-mode select, .light-mode textarea, .light-mode .my
 body.light-mode .my-booked-class {
   background-color: green !important;
 }
+
+body.light-mode .my-booked-class > button {
+  background-color: transparent!important;
+}
+
 body.light-mode .my-booked-class1 {
   background-color: grey !important;
+}
+
+body.light-mode .my-booked-class1 >  button {
+  background-color: transparent!important;
 }
 
 html,
