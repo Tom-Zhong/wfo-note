@@ -21,8 +21,10 @@ export default function () {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0);
   const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0);
+  const [alertMode, setAlertMode] = useState<string>('flexible'); // strict, flexible, silent
+  const [alertModeErrState, setAlertModeErrState] = useState<string>('');
 
-  const [showView, setShowView] = useState<number>(1); // 1: main, 2: about, 3: settings
+  const [showView, setShowView] = useState<number>(3); // 1: main, 2: about, 3: settings
   const [activeMenu, setActiveMenu] = useState<string>('');
   // console.log('workDays:', workDays);
   // console.log('restDays:', restDays);
@@ -69,16 +71,35 @@ export default function () {
       const month = currentMonth.getMonth() + 1;
 
       const storedWorkDays = StorageUtils.load('workDays');
-      const currentMonthWorkDays = storedWorkDays[`${year}-${month}`] || [];
-      setCurrentMonthWorkDays(currentMonthWorkDays.length);
-      console.log('storedWorkDays:', storedWorkDays);
+      if (storedWorkDays) {
+        const currentMonthWorkDays = storedWorkDays[`${year}-${month}`] || [];
+        setCurrentMonthWorkDays(currentMonthWorkDays.length);
+        console.log('storedWorkDays:', storedWorkDays);
+      }
+
 
       const storedRestDays = StorageUtils.load('restDays');
-      const currentMonthRestDays = storedRestDays[`${year}-${month}`] || [];
-      setCurrentMonthRestDays(currentMonthRestDays.length);
-      console.log('storedRestDays:', storedRestDays);
+      if (storedRestDays) {
+        const currentMonthRestDays = storedRestDays[`${year}-${month}`] || [];
+        setCurrentMonthRestDays(currentMonthRestDays.length);
+        console.log('storedRestDays:', storedRestDays);
+      }
     }
   }, [currentMonth, workDays, restDays]);
+
+  const handleAlertModeChange = useCallback((mode: string) => {
+    setAlertMode(mode);
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        new Notification('WFO笔记本', {
+          body: `提醒模式已切换为：${mode === 'strict' ? 'WFO日提醒模式' : mode === 'flexible' ? '灵活模式' : '静音模式'}`,
+        });
+      } else {
+        setAlertModeErrState('无法启用提醒模式，请允许通知权限');
+        console.log('Notification permission denied');
+      }
+    });
+  }, []);
 
   useEffect(() => {
     console.log('currentMonthWorkDays', currentMonthWorkDays);
@@ -351,7 +372,17 @@ export default function () {
           }}
         >
           <h1 style={{marginBottom: '10px'}}>设置</h1>
-          <p>目前暂无可配置选项，敬请期待！</p>
+          {/* <p>目前暂无可配置选项，敬请期待！</p> */}
+          <div>
+            <h2>提醒模式</h2>
+            <input type="radio" id="mode1" name="remindMode" value="strict" onChange={() => handleAlertModeChange('strict')} checked={alertMode === 'strict'} disabled/>
+            <label htmlFor="mode1"> WFO日提醒模式（仅在计划的WFO日进行提醒，需要您提前在WFO中设置WFO日）</label><br />
+            <input type="radio" id="mode2" name="remindMode" value="flexible" onChange={() => handleAlertModeChange('flexible')} checked={alertMode === 'flexible'} />
+            <label htmlFor="mode2"> 灵活模式（每个工作日均提醒，可忽略） - 敬请期待</label><br />
+            <input type="radio" id="mode3" name="remindMode" value="silent" onChange={() => handleAlertModeChange('silent')} checked={alertMode === 'silent'} />
+            <label htmlFor="mode3"> 静音模式（不进行任何提醒, WFO仅做记录）</label><br />
+            { alertModeErrState && <p style={{ color: 'red', margin: '10px 0' }}>{alertModeErrState}</p> }
+          </div>
           <button onClick={() => setShowView(1)} style={{marginBottom: '15px'}}>返回主界面</button>
         </div>
       </div>
