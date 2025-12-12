@@ -3,9 +3,9 @@ body.dark-mode, .dark-mode {
   color: #f1f1f1 !important;
 }
 body.dark-mode button, .dark-mode button {
-  background: #222 !important;
-  color: #f1f1f1 !important;
-  border-color: #444 !important;
+  background: #222;
+  color: #f1f1f1;
+  border-color: #444;
 }
 body.dark-mode input, .dark-mode select, .dark-mode textarea, .dark-mode .my-booked-class, .dark-mode .my-booked-class1 {
   background: #222 !important;
@@ -24,9 +24,9 @@ body.light-mode, .light-mode {
   color: #222 !important;
 }
 body.light-mode button, .light-mode button {
-  background: #fff !important;
-  color: #222 !important;
-  border-color: #ccc !important;
+  background: #fff;
+  color: #222;
+  border-color: #ccc;
 }
 body.light-mode input, .light-mode select, .light-mode textarea, .light-mode .my-booked-class, .light-mode .my-booked-class1 {
   background: #fff !important;
