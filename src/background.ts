@@ -29,6 +29,18 @@ browser.runtime.onMessage.addListener(async (message) => {
     // console.log('Received workdays from popup:', workdays);
     await browser.storage.local.set({ workdays })
   }
+
+  if (message && message.type === 'storageCurrentUserWorkdays') {
+    // 处理 storageCurrentUserWorkdays 消息
+    const currentUserWorkdays = message.payload;
+    if (!currentUserWorkdays) {
+      // console.error('Invalid currentUserWorkdays data received from popup:', currentUserWorkdays);
+      return;
+    }
+    // 存储或处理 currentUserWorkdays 数据
+    // console.log('Received currentUserWorkdays from popup:', currentUserWorkdays);
+    await browser.storage.local.set(currentUserWorkdays)
+  }
 });
 
 browser.runtime.onInstalled.addListener(() => {
@@ -75,7 +87,7 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
         icon: '/icon/48.png',
         actions: [
           { action: 'confirmWFO', title: '有' },
-          { action: 'ignore', title: '忽略' }
+          { action: 'notWFOThisWeek', title: '本周不去公司' }
         ],
         requireInteraction: true
       });
@@ -105,45 +117,107 @@ browser.notifications.onClosed.addListener(async (id) => {
 
 // 关闭通知
 browser.notifications.onClicked.addListener((id) => {
-  console.log('Notification clicked:', id);
+  // console.log('Notification clicked:', id);
   browser.notifications.clear(id);
 });
 
 browser.notifications.onButtonClicked.addListener((id, buttonIndex) => {
-  console.log('Notification button clicked:', id, buttonIndex);
+  // console.log('Notification button clicked:', id, buttonIndex);
   browser.notifications.clear(id);
 });
 
 self.addEventListener('notificationclick', async (event) => {
-  console.log('Service Worker Notification clicked:', event);
+  // console.log('Service Worker Notification clicked:', event);
   // @ts-ignore
   const action = event.action;
   if (action === 'ignore') {
-    console.log('User chose to ignore the notification.');
+    // console.log('User chose to ignore the notification.');
   } else if (action === 'confirmWFO') {
     // 确认WFO操作
-    console.log('User confirmed they have WFO today.');
+    // console.log('User confirmed they have WFO today.');
     // 获取当月用户点击确认WFO的日期列表
     const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
-    console.log('Current month for WFO storage:', currentMonth);
+    // console.log('Current month for WFO storage:', currentMonth);
 
     // 获取已有的WFO日期列表
     const existingWFOdates = (await browser.storage.local.get(`userWfoDates_${currentMonth}`))[`userWfoDates_${currentMonth}`] || [];
-    console.log('Existing WFO dates for current month:', existingWFOdates);
+    // console.log('Existing WFO dates for current month:', existingWFOdates);
 
     if (existingWFOdates.includes(Formatter.formatDateToString(new Date()))) {
-      console.log('WFO date for today already recorded.');
+      // console.log('WFO date for today already recorded.');
       // @ts-ignore
       event.notification.close();
       return;
     } else {
       existingWFOdates.push(Formatter.formatDateToString(new Date()));
       await browser.storage.local.set({ [`wfoDates_${currentMonth}`]: existingWFOdates });
-      console.log('Updated WFO dates for current month:', existingWFOdates);
+      // console.log('Updated WFO dates for current month:', existingWFOdates);
     }
+
+    // 获取当月全月工作日减去用户定义的休假日数
+    const currentUserWorkdays = (await browser.storage.local.get(`currentUserWorkdays`))[`currentUserWorkdays`] || 0;
+
+    // 给出建议，用户如果确认的WFO日期达到或超过当月工作日数，则提示用户
+    if (existingWFOdates.length / currentUserWorkdays > 0.4) {
+      // @ts-ignore
+      self.registration.showNotification('WFO提醒', {
+        title: 'WFO提醒',
+        body: `按照您当前已经确认的工作日天数，您已经满足40%的WFO需求啦！`,
+        icon: '/icon/48.png',
+        actions: [
+          { action: 'ignore', title: '忽略' }
+        ],
+        requireInteraction: true
+      });
+    } else {
+       // @ts-ignore
+       self.registration.showNotification('WFO提醒', {
+        title: 'WFO提醒',
+        body: `按照您当前已经确认的工作日天数，您仍未满足40%的WFO需求，你可能还需要去公司${String(Math.floor((currentUserWorkdays) * 0.4) - existingWFOdates.length)}天WFO！`,
+        icon: '/icon/48.png',
+        actions: [
+          { action: 'ignore', title: '忽略' }
+        ],
+        requireInteraction: true
+      });
+    }
+    // @ts-ignore
+    event.notification.close();
+  } else if (action === 'notWFOThisWeek') {
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const existingWFOdates = (await browser.storage.local.get(`userWfoDates_${currentMonth}`))[`userWfoDates_${currentMonth}`] || [];
+    // console.log('Existing WFO dates for current month:', existingWFOdates);
+
+    // 获取当月全月工作日减去用户定义的休假日数
+    const currentUserWorkdays = (await browser.storage.local.get(`currentUserWorkdays`))[`currentUserWorkdays`] || 0;
+    
+    // 计算本周不去公司的话，接下来每周最少去公司几天
+    // 接下来一周不去公司
+    // 获取今天在本月第几周
+    const weekNumber = Formatter.getWeekNumber(new Date());
+
+    const weeksInMonth = Formatter.getWeeksInMonth(new Date());
+
+    const perWorkdaysPlusWeek = Math.floor(currentUserWorkdays * 0.4) - existingWFOdates.length;
+
+    // 直接计算剩余几周，然后计算要达到40%的WFO， 剩下几周最少每周去公司几天
+    const remainingWeeks = weeksInMonth - weekNumber;
+    // console.log('Remaining weeks:', remainingWeeks);
+
+    const perWorkdays = Math.floor(perWorkdaysPlusWeek / remainingWeeks);
+
+    // console.log('Per workdays:', perWorkdays);
+    // @ts-ignore
+    self.registration.showNotification('WFO提醒', {
+      title: 'WFO提醒',
+      body: `按照您当前已经确认工作日数，您接下来仍然需要每周去公司${perWorkdays} 天WFO！`,
+      icon: '/icon/48.png',
+      actions: [
+        { action: 'ignore', title: '知道了' }
+      ],
+      requireInteraction: true
+    });
   }
-  // @ts-ignore
-  event.notification.close();
 });
 
 console.log("[background.ts] Background script loaded.");
