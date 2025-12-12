@@ -17,12 +17,12 @@ import { Formatter } from '@/utils/Formatter';
 export default function () {
   const [selected, setSelected] = useState<Date[] | undefined>();
 
-  const [workDays, setWorkDays] = useState<any[]>([]);
-  const [restDays, setRestDays] = useState<any[]>([]);
-  const [realWorkDays, setRealWorkDays] = useState<number>(0);
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0);
-  const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0);
+  const [workDays, setWorkDays] = useState<any[]>([]); // 所有月份的工作日
+  const [restDays, setRestDays] = useState<any[]>([]); // 所有月份的休息日
+  const [realWorkDays, setRealWorkDays] = useState<number>(0); // 实际工作天数
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date()); // 当前选择的月份
+  const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0); // 当前月份已设定的工作日数量
+  const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0); // 当前月份已设定的休息日数量
   const [alertMode, setAlertMode] = useState<string>(StorageUtils.load('alertMode') || 'flexible'); // strict, flexible, silent
   const [alertModeErrState, setAlertModeErrState] = useState<string>('');
 
@@ -114,7 +114,11 @@ export default function () {
 
   useEffect(() => {
     console.log('realWorkDays', realWorkDays);
-  }, [realWorkDays]);
+    // 将当前全月工作日数和休息日数传给background.ts
+    Browser.runtime.sendMessage({ type: "storageCurrentUserWorkdays", payload: { 
+      currentUserWorkdays: realWorkDays - currentMonthRestDays
+    }});
+  }, [realWorkDays, currentMonthRestDays]);
 
   const resetCurrentMonth = useCallback(() => {
     const storedWorkDays = StorageUtils.load('workDays');
