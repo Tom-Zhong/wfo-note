@@ -15,6 +15,25 @@ import { IoSettings } from "react-icons/io5";
 import { Formatter } from '@/utils/Formatter';
 import CommonUtils from '@/utils/CommonUtils';
 
+/**
+ * 自动清除无用的数据
+ * 1. 当前前三个月以前的数据（比如说当前十二月， 那么八月的数据就是要被丢弃的）
+ * 
+ */
+function autoClearUnusedData () {
+  const start = new Date();
+  const year = start.getFullYear();
+  const month = start.getMonth() - 3;
+  const storedWorkDays = StorageUtils.load('workDays');
+
+  // console.log('autoClearUnusedData:', `${year}-${month}`);
+  if (storedWorkDays && storedWorkDays[`${year}-${month}`]) {
+    delete storedWorkDays[`${year}-${month}`];
+    StorageUtils.save('workDays', storedWorkDays);
+    // console.log('autoClearUnusedData done', `${year}-${month}`);
+  }
+}
+
 export default function () {
   const [selected, setSelected] = useState<Date[] | undefined>();
 
@@ -72,7 +91,7 @@ export default function () {
     // if (storedRestDays) {
     //   setRestDays(storedRestDays.map((time: number) => new Date(time)));
     // }
-
+    autoClearUnusedData();
   }, []);
 
   useEffect(() => {
