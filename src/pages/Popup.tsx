@@ -13,6 +13,7 @@ import { FaHome } from "react-icons/fa";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import { IoSettings } from "react-icons/io5";
 import { Formatter } from '@/utils/Formatter';
+import CommonUtils from '@/utils/CommonUtils';
 
 export default function () {
   const [selected, setSelected] = useState<Date[] | undefined>();
@@ -30,6 +31,20 @@ export default function () {
   const [activeMenu, setActiveMenu] = useState<string>('');
   // console.log('workDays:', workDays);
   // console.log('restDays:', restDays);
+  // 主题切换
+  const [theme, setTheme] = useState<string>(() => {
+    return localStorage.getItem('theme') || CommonUtils.getSystemTheme();
+  });
+
+  useEffect(() => {
+    document.body.classList.remove('dark-mode', 'light-mode');
+    document.body.classList.add(theme === 'dark' ? 'dark-mode' : 'light-mode');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
 
   useEffect(() => {
     console.log("[WFO-Note] App runs ok!!!");
@@ -239,6 +254,22 @@ export default function () {
           paddingBottom: '30px',
         }}
       >
+        <button
+          onClick={toggleTheme}
+          style={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            zIndex: 1000,
+            padding: '4px 12px',
+            borderRadius: '6px',
+            border: '1px solid #888',
+            cursor: 'pointer',
+            fontSize: '14px',
+          }}
+        >
+          {theme === 'dark' ? '切换浅色' : '切换深色'}
+        </button>
         <div
           style={{
             display: showView === 1 ? 'block' : 'none',
