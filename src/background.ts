@@ -43,9 +43,14 @@ browser.runtime.onMessage.addListener(async (message) => {
   }
 });
 
-browser.runtime.onInstalled.addListener(() => {
+browser.runtime.onInstalled.addListener(async() => {
   // browser.alarms.create('minuteReminder', { periodInMinutes: 1 });
   browser.alarms.create('checkDates', { periodInMinutes: isDev ? 1 : 180 }); // 每分钟检查一次日期
+
+  // 初始化存储
+  await browser.storage.local.set({ alertDay: '' }); // 重置 alertDay，确保模式切换后当天仍可提醒
+  await browser.storage.local.set({ alertMode: 'silent' });
+  await browser.storage.local.set({ workdays: {} });
 });
 
 browser.alarms.onAlarm.addListener(async (alarm) => {
