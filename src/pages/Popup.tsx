@@ -5,9 +5,11 @@ import "react-day-picker/style.css";
 import { eachDayOfInterval, isWeekend } from 'date-fns';
 import { utils, writeFile } from 'xlsx';
 import StorageUtils from '@/utils/StorageUtils';
+import Browser from 'webextension-polyfill';
 
 import "./Popup.css";
 
+import { FaHome } from "react-icons/fa";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import { IoSettings } from "react-icons/io5";
 import { Formatter } from '@/utils/Formatter';
@@ -21,10 +23,10 @@ export default function () {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0);
   const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0);
-  const [alertMode, setAlertMode] = useState<string>('flexible'); // strict, flexible, silent
+  const [alertMode, setAlertMode] = useState<string>(StorageUtils.load('alertMode') || 'flexible'); // strict, flexible, silent
   const [alertModeErrState, setAlertModeErrState] = useState<string>('');
 
-  const [showView, setShowView] = useState<number>(3); // 1: main, 2: about, 3: settings
+  const [showView, setShowView] = useState<number>(1); // 1: main, 2: about, 3: settings
   const [activeMenu, setActiveMenu] = useState<string>('');
   // console.log('workDays:', workDays);
   // console.log('restDays:', restDays);
@@ -89,10 +91,15 @@ export default function () {
 
   const handleAlertModeChange = useCallback((mode: string) => {
     setAlertMode(mode);
+    StorageUtils.save('alertMode', mode);
+    const workDays = StorageUtils.load('workDays');
+    Browser.runtime.sendMessage({ type: "storageMode", payload: mode });
+    Browser.runtime.sendMessage({ type: "storageWorkdays", payload: workDays });
+
     Notification.requestPermission().then((permission) => {
       if (permission === 'granted') {
         new Notification('WFO笔记本', {
-          body: `提醒模式已切换为：${mode === 'strict' ? 'WFO日提醒模式' : mode === 'flexible' ? '灵活模式' : '静音模式'}`,
+          body: `提醒模式已切换为：${mode === 'strict' ? 'WFO日提醒模式（按照您设定的WFO进行提醒）' : mode === 'flexible' ? '灵活模式（每个工作日都会提醒您）' : '静音模式（由您自行安排WFO）'}`,
         });
       } else {
         setAlertModeErrState('无法启用提醒模式，请允许通知权限');
@@ -375,15 +382,15 @@ export default function () {
           {/* <p>目前暂无可配置选项，敬请期待！</p> */}
           <div>
             <h2>提醒模式</h2>
-            <input type="radio" id="mode1" name="remindMode" value="strict" onChange={() => handleAlertModeChange('strict')} checked={alertMode === 'strict'} disabled/>
-            <label htmlFor="mode1"> WFO日提醒模式（仅在计划的WFO日进行提醒，需要您提前在WFO中设置WFO日）</label><br />
+            <input type="radio" id="mode1" name="remindMode" value="strict" onChange={() => handleAlertModeChange('strict')} checked={alertMode === 'strict'} />
+            <label htmlFor="mode1"> WFO日提醒模式（仅按计划的WFO日进行提醒，需要您提前在WFO中设置WFO日）</label><br />
             <input type="radio" id="mode2" name="remindMode" value="flexible" onChange={() => handleAlertModeChange('flexible')} checked={alertMode === 'flexible'} />
-            <label htmlFor="mode2"> 灵活模式（每个工作日均提醒，可忽略） - 敬请期待</label><br />
+            <label htmlFor="mode2"> 灵活模式（每个工作日均提醒，每日只提醒一次）</label><br />
             <input type="radio" id="mode3" name="remindMode" value="silent" onChange={() => handleAlertModeChange('silent')} checked={alertMode === 'silent'} />
-            <label htmlFor="mode3"> 静音模式（不进行任何提醒, WFO仅做记录）</label><br />
+            <label htmlFor="mode3"> 静音模式（不进行任何提醒, 由您自行规划）</label><br />
             { alertModeErrState && <p style={{ color: 'red', margin: '10px 0' }}>{alertModeErrState}</p> }
           </div>
-          <button onClick={() => setShowView(1)} style={{marginBottom: '15px'}}>返回主界面</button>
+          <button onClick={() => setShowView(1)} style={{margin: '15px 0 20px 0'}}>返回主界面</button>
         </div>
       </div>
 
@@ -396,8 +403,9 @@ export default function () {
         alignItems: 'center',
         gap: '5px'
       }} className='gray-bg' onMouseOver={(target) => showActiveMenu(target)} onMouseLeave={() => setActiveMenu('')}>
-        <IoIosInformationCircleOutline style={{ fontSize: '18px', marginRight: '0px', cursor: 'unset' }} className='active' name='关于' onClick={() => setShowView(2)} />
+        <FaHome style={{ fontSize: '18px', cursor: 'unset' }} className='active' name='主页' onClick={() => setShowView(1)} />
         <IoSettings style={{ fontSize: '18px', cursor: 'unset' }} className='active' name='设置' onClick={() => setShowView(3)} />
+        <IoIosInformationCircleOutline style={{ fontSize: '18px', marginRight: '0px', cursor: 'unset' }} className='active' name='关于' onClick={() => setShowView(2)} />
         <h4>{activeMenu}</h4>
       </div>
     </div>

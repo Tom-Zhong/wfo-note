@@ -18,6 +18,6 @@
     "{{chrome}}.service_worker": "src/background.ts",
     "{{firefox}}.scripts": ["src/background.ts"]
   },
-  "permissions": ["storage", "notifications"],
+  "permissions": ["storage", "notifications", "alarms"],
   "host_permissions": ["<all_urls>"]
 }
