@@ -403,7 +403,7 @@ export default function () {
           <p>感谢您使用WFO笔记本！这个插件旨在帮助您更好地管理和记录您的远程办公时间。</p>
           <p>如果您有任何建议或反馈，欢迎通过以下方式联系我：</p>
           <ul>
-            <li>电子邮件：<a href="mailto:81437455@qq.com">81437455@qq.com</a></li>
+            <li>GitHub：<a href="https://github.com/Tom-Zhong/wfo-note">https://github.com/Tom-Zhong/wfo-note</a></li>
           </ul>
           <button onClick={() => setShowView(1)} style={{marginBottom: '15px'}}>返回主界面</button>
         </div>
