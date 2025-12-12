@@ -67,15 +67,32 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
       (getCurrentMonthWorkdays.includes(Formatter.formatDateToString(today)) && alertMode === 'strict')
       || alertMode === 'flexible'
     ) {
-      browser.notifications.create({
-        type: 'basic',
-        iconUrl: '/icon/48.png',
-        title: 'WFO笔记本提醒',
-        message: `今天您(${Formatter.formatDateToString(today)})有计划去公司办公喔！`,
-        // @ts-ignore
-        requireInteraction: true,
-        isClickable: true,
+      // 创建带按钮的通知
+      // @ts-ignore
+      self.registration.showNotification('WFO提醒', {
+        title: 'WFO提醒',
+        body: `今天（${Formatter.formatDateToString(today)}）您有计划去公司办公！ 你今天有WFO吗？`,
+        icon: '/icon/48.png',
+        actions: [
+          { action: 'confirmWFO', title: '有' },
+          { action: 'ignore', title: '忽略' }
+        ],
+        requireInteraction: true
       });
+
+      // browser.notifications.create('wfo-action', {
+      //   type: 'basic',
+      //   iconUrl: '/icon/48.png',
+      //   title: 'WFO提醒',
+      //   message: '今天有计划去公司办公！',
+      //   // @ts-ignore
+      //   actions: [
+      //     { title: '打开日历' },
+      //     { title: '忽略' }
+      //   ],
+      //   // @ts-ignore
+      //   requireInteraction: true
+      // });
     }
   }
 });
@@ -90,6 +107,43 @@ browser.notifications.onClosed.addListener(async (id) => {
 browser.notifications.onClicked.addListener((id) => {
   console.log('Notification clicked:', id);
   browser.notifications.clear(id);
+});
+
+browser.notifications.onButtonClicked.addListener((id, buttonIndex) => {
+  console.log('Notification button clicked:', id, buttonIndex);
+  browser.notifications.clear(id);
+});
+
+self.addEventListener('notificationclick', async (event) => {
+  console.log('Service Worker Notification clicked:', event);
+  // @ts-ignore
+  const action = event.action;
+  if (action === 'ignore') {
+    console.log('User chose to ignore the notification.');
+  } else if (action === 'confirmWFO') {
+    // 确认WFO操作
+    console.log('User confirmed they have WFO today.');
+    // 获取当月用户点击确认WFO的日期列表
+    const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+    console.log('Current month for WFO storage:', currentMonth);
+
+    // 获取已有的WFO日期列表
+    const existingWFOdates = (await browser.storage.local.get(`userWfoDates_${currentMonth}`))[`userWfoDates_${currentMonth}`] || [];
+    console.log('Existing WFO dates for current month:', existingWFOdates);
+
+    if (existingWFOdates.includes(Formatter.formatDateToString(new Date()))) {
+      console.log('WFO date for today already recorded.');
+      // @ts-ignore
+      event.notification.close();
+      return;
+    } else {
+      existingWFOdates.push(Formatter.formatDateToString(new Date()));
+      await browser.storage.local.set({ [`wfoDates_${currentMonth}`]: existingWFOdates });
+      console.log('Updated WFO dates for current month:', existingWFOdates);
+    }
+  }
+  // @ts-ignore
+  event.notification.close();
 });
 
 console.log("[background.ts] Background script loaded.");
