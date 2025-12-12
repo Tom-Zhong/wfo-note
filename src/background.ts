@@ -75,6 +75,7 @@ browser.runtime.onInstalled.addListener(async() => {
 
 browser.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === 'checkDates') {
+    // console.log('[background.ts] period checked is triggered');
     const result = await browser.storage.local.get('workdays');
     const alertMode = (await browser.storage.local.get('alertMode')).alertMode;
     const workdays: Record<string, string[]> = result.workdays || {};
@@ -99,6 +100,8 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
       return;
     }
 
+    const modeText = alertMode === 'strict' ? 'WFO日提醒模式' : '灵活模式';
+
     // flexible 模式下，每个工作日都提醒
     if (
       (getCurrentMonthWorkdays.includes(Formatter.formatDateToString(today)) && alertMode === 'strict')
@@ -121,7 +124,7 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
       const notificationId = 'wfo-reminder-' + Date.now();
       const notificationOptions = {
         title: 'WFO提醒',
-        body: `今天（${Formatter.formatDateToString(today)}）您有计划去公司办公！ 你今天有WFO吗？`,
+        body: `[${modeText}] 今天（${Formatter.formatDateToString(today)} 您有计划去公司办公！ 你今天有WFO吗？`,
         icon: '/icon/48.png',
         actions: [
           { action: 'confirmWFO', title: '有' },
