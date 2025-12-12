@@ -86,4 +86,10 @@ browser.notifications.onClosed.addListener(async (id) => {
   await browser.storage.local.set({ alertDay: Formatter.formatDateToString(new Date()) });
 });
 
+// 关闭通知
+browser.notifications.onClicked.addListener((id) => {
+  console.log('Notification clicked:', id);
+  browser.notifications.clear(id);
+});
+
 console.log("[background.ts] Background script loaded.");
