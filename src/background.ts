@@ -2,7 +2,7 @@ import browser from "webextension-polyfill";
 import { Formatter } from "./utils/Formatter";
 import { isWeekend } from "date-fns";
 
-const isDev = process.env.NODE_ENV !== 'development';
+const isDev = process.env.NODE_ENV === 'development';
 
 //  创建并且按指定秒数消失notification
 function createAutoClosingNotification(id: string, options: any, timeoutMs: number = 60000) {
@@ -88,7 +88,7 @@ browser.runtime.onInstalled.addListener(async() => {
 
   // 初始化存储
   !isDev && await browser.storage.local.set({ alertDay: '' }); // 重置 alertDay，确保模式切换后当天仍可提醒
-  !isDev && await browser.storage.local.set({ alertMode: 'silent' });
+  !isDev && await browser.storage.local.set({ alertMode: 'flexible' });
   !isDev && await browser.storage.local.set({ workdays: {} });
   !isDev && await browser.storage.local.set({ wfoRatio: 40 });
 });

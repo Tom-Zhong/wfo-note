@@ -46,7 +46,7 @@ export default function () {
   const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0); // 当前月份已设定的工作日数量
   const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0); // 当前月份已设定的休息日数量
   const [currentUserWfoDatesLength, setCurrentUserWfoDatesLength] = useState<number>(0); // 用户确认到公司办公的天数
-  const [alertMode, setAlertMode] = useState<string>(StorageUtils.load('alertMode') || 'silent'); // strict, flexible, silent
+  const [alertMode, setAlertMode] = useState<string>(StorageUtils.load('alertMode') || 'flexible'); // strict, flexible, silent
   const [wfoRatio, setWfoRatio] = useState<number>(Number(StorageUtils.load('wfoRatio')) || 40);
   const [remindBefore1day, setRemindBefore1day] = useState<boolean>(StorageUtils.load('remindBefore1day') || false);
   const [alertModeErrState, setAlertModeErrState] = useState<string>('');
