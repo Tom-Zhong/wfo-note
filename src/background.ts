@@ -155,6 +155,8 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
 
       createAutoClosingNotification(notificationId, notificationOptions, 10000);
 
+      await browser.storage.local.set({ alertDay: Formatter.formatDateToString(new Date()) });
+
       // browser.notifications.create('wfo-action', {
       //   type: 'basic',
       //   iconUrl: '/icon/48.png',
@@ -170,7 +172,9 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
       // });
     }
   }
+});
 
+browser.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === 'checkDates') {
     // 获取是否要提前一日提醒用户WFO
     const remindBefore1day = (await browser.storage.local.get('remindBefore1day')).remindBefore1day;
@@ -196,8 +200,8 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
     // 如果是true，那么将在下午五点左右提醒用户明日要WFO
     // 并且检查是否提醒过了
     if (remindBefore1day && (!remindBefore1dayTime || new Date(remindBefore1dayTime).getDate() !== today.getDate())) {
-      if (today.getHours() >= 20) {
-        // console.log('It is after 5pm, so we will remind you tomorrow.');
+      if (today.getHours() >= 16) {
+        // console.log('It is after 16pm, so we will remind you tomorrow.');
         // 创建带按钮的通知
         createAutoClosingNotification(
           'wfo-reminder-' + firstUpcomingWorkday,
@@ -206,7 +210,7 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
             body: `[提前工作日提醒] 在 ${firstUpcomingWorkday}）您有计划去公司办公！请知晓`,
             icon: '/icon/48.png',
             actions: [
-              { action: 'confirmWFO', title: '有' },
+              { action: 'ignore', title: '知道啦！' },
             ]
           },
           10000
