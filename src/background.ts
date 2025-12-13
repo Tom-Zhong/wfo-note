@@ -304,7 +304,11 @@ self.addEventListener('notificationclick', async (event) => {
 
     // 获取当月全月工作日减去用户定义的休假日数
     const currentUserWorkdays = (await browser.storage.local.get(`currentUserWorkdays`))[`currentUserWorkdays`] || 0;
-    
+
+    // console.log('currentUserWorkdays', currentUserWorkdays, Math.ceil(currentUserWorkdays * wfoRatio));
+    // console.log('wfoRatio', wfoRatio);
+    // console.log('existingWFOdates', existingWFOdates.length);
+ 
     // 计算本周不去公司的话，接下来每周最少去公司几天
     // 接下来一周不去公司
     // 获取今天在本月第几周
@@ -314,17 +318,18 @@ self.addEventListener('notificationclick', async (event) => {
 
     const perWorkdaysPlusWeek = Math.ceil(currentUserWorkdays * wfoRatio) - existingWFOdates.length;
 
-    // 直接计算剩余几周，然后计算要达到40%的WFO， 剩下几周最少每周去公司几天
+    // 直接计算剩余几周，然后计算要达到wfoRatio的WFO， 剩下几周最少每周去公司几天
     const remainingWeeks = weeksInMonth - weekNumber;
     // console.log('Remaining weeks:', remainingWeeks);
 
-    const perWorkdays = Math.ceil(perWorkdaysPlusWeek / remainingWeeks);
+    const perWorkdays = perWorkdaysPlusWeek / remainingWeeks;
+    // console.log('perWorkdays', perWorkdaysPlusWeek, remainingWeeks,  Math.ceil(perWorkdaysPlusWeek / remainingWeeks));
 
     // console.log('Per workdays:', perWorkdays);
     // @ts-ignore
     self.registration.showNotification('WFO提醒', {
       title: 'WFO提醒',
-      body: perWorkdays === 0 ? `您已无需WFO了！` : `按照您当前已经确认${existingWFOdates.length}工作日数，您接下来仍然需要每周去公司${perWorkdays}天WFO！`,
+      body: perWorkdays === 0 ? `您已无需WFO了！` : `按照您当前已经确认${existingWFOdates.length}工作日数，您接下来${remainingWeeks}需要每周去公司最少${perWorkdays.toFixed(2)}天， 建议每周${Math.ceil(perWorkdays)}天WFO！`,
       icon: '/icon/48.png',
       actions: [
         { action: 'ignore', title: '知道啦！' }

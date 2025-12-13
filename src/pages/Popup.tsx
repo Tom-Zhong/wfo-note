@@ -397,7 +397,7 @@ export default function () {
                 {currentUserWfoDatesLength} 天(WFO已达到
                 {Math.floor(currentUserWfoDatesLength / (realWorkDays - currentMonthRestDays) * 100)} %)
               </h3>
-              <h3 style={{ fontSize: '14x', whiteSpace: 'nowrap', marginTop: '0px', fontWeight: 'normal' }}>
+              <h3 style={{ fontSize: '14x', whiteSpace: 'nowrap', marginTop: '2px', fontWeight: 'normal' }}>
                 ({currentMonth?.toLocaleString('default', { month: 'long' })}的计划WFO已达到
                 {Math.floor(currentMonthWorkDays / (realWorkDays - currentMonthRestDays) * 100)} %)
               </h3>
