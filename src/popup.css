@@ -1,6 +1,7 @@
 body.dark-mode, .dark-mode {
   background: #181818 !important;
   color: #f1f1f1 !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 body.dark-mode button, .dark-mode button {
   background: #222;
@@ -27,6 +28,7 @@ body.dark-mode .my-booked-class1 > button {
 body.light-mode, .light-mode {
   background: #fff !important;
   color: #222 !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 body.light-mode button, .light-mode button {
   background: #fff;
@@ -50,6 +52,11 @@ body.light-mode .my-booked-class1 {
 
 body.light-mode .my-booked-class1 >  button {
   background-color: transparent!important;
+}
+
+body.dark-mode *,
+body.light-mode * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 html,
