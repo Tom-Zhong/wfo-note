@@ -351,7 +351,7 @@ export default function () {
                 locale={zhCN}
                 weekStartsOn={0}
               />
-              <p>(当前月份是 {currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}, 共有{realWorkDays}个工作日)</p>
+              <p style={{marginTop: '5px'}}>(当前月份是 {currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}, 共有{realWorkDays}个工作日)</p>
               <div className='flex-row' style={{ width: '100%', gap: '10px', marginTop: '20px' }}>
                 <div className='flex-row' style={{ alignItems: 'center', gap: '5px' }}>
                   <div style={{ width: '20px', height: '20px', backgroundColor: 'green' }}></div>
@@ -362,7 +362,7 @@ export default function () {
                   <span>休假</span>
                 </div>
               </div>
-              <h3 style={{ fontSize: '20px' }}>
+              <h3 style={{ fontSize: '20px', whiteSpace: 'nowrap' }}>
                 您{currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}的计划WFO已达到
                 {Math.floor(currentMonthWorkDays / (realWorkDays - currentMonthRestDays) * 100)} %
               </h3>
