@@ -123,6 +123,8 @@ export default function () {
         setCurrentMonthRestDays(currentMonthRestDays.length);
         // console.log('storedRestDays:', storedRestDays);
       }
+      const workDays = StorageUtils.load('workDays');
+      Browser.runtime.sendMessage({ type: "storageWorkdays", payload: workDays });
     }
   }, [currentMonth, workDays, restDays]);
 
