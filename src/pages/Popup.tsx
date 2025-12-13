@@ -392,7 +392,7 @@ export default function () {
                   <span>休假</span>
                 </div>
               </div>
-              <h3 style={{ fontSize: '16px', marginBottom: '0px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+              <h3 style={{ fontSize: '16px', marginBottom: '0px', whiteSpace: 'nowrap', fontWeight: 'bold', padding: '2px 5px', border: '1px solid grey' }}>
                 {currentMonth?.toLocaleString('default', { month: 'long'})}的实际确认WFO天数为
                 {currentUserWfoDatesLength} 天(WFO已达到
                 {Math.floor(currentUserWfoDatesLength / (realWorkDays - currentMonthRestDays) * 100)} %)
@@ -479,7 +479,7 @@ export default function () {
           <h1 style={{marginBottom: '10px'}}>关于 WFO笔记本</h1>
           <p>版本：v1.0.0 Beta</p>
           <p>作者：Tom Zung</p>
-          <p>感谢您使用WFO笔记本！这个插件旨在帮助您更好地管理和记录您的远程办公时间。</p>
+          <p>感谢您使用WFO笔记本！这个插件旨在帮助您更好地管理和记录您的公司办公时间。</p>
           <p>本插件基于React和vite-plugin-web-extension开发，使用React Hooks进行状态管理。</p>
           <p>当前实现功能</p>
           <ol>

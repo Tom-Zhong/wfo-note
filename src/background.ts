@@ -318,7 +318,7 @@ self.addEventListener('notificationclick', async (event) => {
     const remainingWeeks = weeksInMonth - weekNumber;
     // console.log('Remaining weeks:', remainingWeeks);
 
-    const perWorkdays = Math.floor(perWorkdaysPlusWeek / remainingWeeks);
+    const perWorkdays = Math.ceil(perWorkdaysPlusWeek / remainingWeeks);
 
     // console.log('Per workdays:', perWorkdays);
     // @ts-ignore
