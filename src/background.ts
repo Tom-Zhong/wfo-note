@@ -77,9 +77,9 @@ browser.runtime.onInstalled.addListener(async() => {
   console.log('[background.ts] period checked is registered, periodInMinutes: ', isDev ? 1 : 180);
 
   // 初始化存储
-  await browser.storage.local.set({ alertDay: '' }); // 重置 alertDay，确保模式切换后当天仍可提醒
-  await browser.storage.local.set({ alertMode: 'silent' });
-  await browser.storage.local.set({ workdays: {} });
+  !isDev && await browser.storage.local.set({ alertDay: '' }); // 重置 alertDay，确保模式切换后当天仍可提醒
+  !isDev && await browser.storage.local.set({ alertMode: 'silent' });
+  !isDev && await browser.storage.local.set({ workdays: {} });
 });
 
 browser.alarms.onAlarm.addListener(async (alarm) => {
@@ -164,23 +164,35 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
     // 获取是否要提前一日提醒用户WFO
     const remindBefore1day = (await browser.storage.local.get('remindBefore1day')).remindBefore1day;
     const remindBefore1dayTime = (await browser.storage.local.get('remindBefore1dayTime')).remindBefore1dayTime;
-    console.log('[background.ts] remindBefore1day:', remindBefore1day, remindBefore1dayTime);
+    // console.log('[background.ts] remindBefore1day:', remindBefore1day, remindBefore1dayTime);
+
+    const result = await browser.storage.local.get('workdays');
+    const workdays: Record<string, string[]> = result.workdays || {};
+    // console.log('Checking workdays:', workdays);
+    const today = new Date(); // 'YYYY/MM/DD'
+    const yearMonth = today.toISOString().slice(0, 7); // 'YYYY-MM'
+    const getCurrentMonthWorkdays = workdays[yearMonth] || [];
+    // console.log('Current month workdays:', getCurrentMonthWorkdays);
+
+    // 获取比今天晚一天的工作日
+    const firstUpcomingWorkday = getCurrentMonthWorkdays.find(dateStr => {
+      const workday = new Date(dateStr);
+      return workday >= today && workday.toDateString() !== today.toDateString();
+    });
+
+    // console.log('First upcoming workday:', firstUpcomingWorkday);
+
     // 如果是true，那么将在下午五点左右提醒用户明日要WFO
     // 并且检查是否提醒过了
-    const today = new Date();
-    if (remindBefore1day && new Date(remindBefore1dayTime).getDate() !== today.getDate()) {
+    if (remindBefore1day && (!remindBefore1dayTime || new Date(remindBefore1dayTime).getDate() !== today.getDate())) {
       if (today.getHours() >= 16) {
         // console.log('It is after 5pm, so we will remind you tomorrow.');
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-        const tomorrowString = Formatter.formatDateToString(tomorrow);
-        console.log('Tomorrow is:', tomorrowString);
         // 创建带按钮的通知
         createAutoClosingNotification(
-          'wfo-reminder-' + tomorrowString,
+          'wfo-reminder-' + firstUpcomingWorkday,
           {
             title: 'WFO提醒',
-            body: `[${remindBefore1day ? '提前提醒' : 'WFO提醒'}] 明日（${tomorrowString}）您有计划去公司办公！`,
+            body: `[提前工作日提醒] 在 ${firstUpcomingWorkday}）您有计划去公司办公！请知晓`,
             icon: '/icon/48.png',
             actions: [
               { action: 'confirmWFO', title: '有' },
