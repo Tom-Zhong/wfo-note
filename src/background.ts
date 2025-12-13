@@ -262,6 +262,12 @@ self.addEventListener('notificationclick', async (event) => {
       // console.log('Updated WFO dates for current month:', existingWFOdates);
     }
 
+    // postMessage to popup.tsx
+    browser.runtime.sendMessage({ type: 'userWfoDates', payload: {
+      [`userWfoDates_${currentMonth}`]: existingWFOdates,
+    }});
+
+
     // 获取当月全月工作日减去用户定义的休假日数
     const currentUserWorkdays = (await browser.storage.local.get(`currentUserWorkdays`))[`currentUserWorkdays`] || 0;
 

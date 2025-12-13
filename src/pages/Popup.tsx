@@ -45,6 +45,7 @@ export default function () {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date()); // 当前选择的月份
   const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0); // 当前月份已设定的工作日数量
   const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0); // 当前月份已设定的休息日数量
+  const [currentUserWfoDatesLength, setCurrentUserWfoDatesLength] = useState<number>(0); // 用户确认到公司办公的天数
   const [alertMode, setAlertMode] = useState<string>(StorageUtils.load('alertMode') || 'silent'); // strict, flexible, silent
   const [wfoRatio, setWfoRatio] = useState<number>(Number(StorageUtils.load('wfoRatio')) || 40);
   const [remindBefore1day, setRemindBefore1day] = useState<boolean>(StorageUtils.load('remindBefore1day') || false);
@@ -126,7 +127,23 @@ export default function () {
       }
       const workDays = StorageUtils.load('workDays');
       Browser.runtime.sendMessage({ type: "storageWorkdays", payload: workDays });
+
+      // 导入userWfoDates for current month from localStorage
+      const userWfoDates = StorageUtils.load(`userWfoDates_${year}-${month}`);
+      setCurrentUserWfoDatesLength(userWfoDates ? userWfoDates.length : 0);
     }
+
+    // get message from background.ts
+    Browser.runtime.onMessage.addListener((message) => {
+      if (message.type === 'userWfoDates') {
+        const formatCurrentMonth = new Date(currentMonth).toISOString().slice(0, 7); // YYYY-MM
+        console.log(message.payload, 'userWfoDates');
+        if (message.payload && message.payload[`userWfoDates_${formatCurrentMonth}`]) {
+          StorageUtils.save(`userWfoDates_${formatCurrentMonth}`, message.payload[`userWfoDates_${formatCurrentMonth}`]);
+          setCurrentUserWfoDatesLength(message.payload[`userWfoDates_${formatCurrentMonth}`].length);
+        }
+      }
+    });
   }, [currentMonth, workDays, restDays]);
 
   const handleAlertModeChange = useCallback((mode: string) => {
@@ -364,6 +381,7 @@ export default function () {
                 weekStartsOn={0}
               />
               <p style={{marginTop: '5px'}}>(当前月份是 {currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}, 共有{realWorkDays}个工作日)</p>
+
               <div className='flex-row' style={{ width: '100%', gap: '10px', marginTop: '20px' }}>
                 <div className='flex-row' style={{ alignItems: 'center', gap: '5px' }}>
                   <div style={{ width: '20px', height: '20px', backgroundColor: 'green' }}></div>
@@ -374,9 +392,14 @@ export default function () {
                   <span>休假</span>
                 </div>
               </div>
-              <h3 style={{ fontSize: '20px', whiteSpace: 'nowrap' }}>
-                您{currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}的计划WFO已达到
-                {Math.floor(currentMonthWorkDays / (realWorkDays - currentMonthRestDays) * 100)} %
+              <h3 style={{ fontSize: '16px', marginBottom: '0px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+                {currentMonth?.toLocaleString('default', { month: 'long'})}的实际确认WFO天数为
+                {currentUserWfoDatesLength} 天(WFO已达到
+                {Math.floor(currentUserWfoDatesLength / (realWorkDays - currentMonthRestDays) * 100)} %)
+              </h3>
+              <h3 style={{ fontSize: '14x', whiteSpace: 'nowrap', marginTop: '0px', fontWeight: 'normal' }}>
+                ({currentMonth?.toLocaleString('default', { month: 'long' })}的计划WFO已达到
+                {Math.floor(currentMonthWorkDays / (realWorkDays - currentMonthRestDays) * 100)} %)
               </h3>
             </div>
             <div style={{ marginRight: '20px', flexGrow: 1 }}>
@@ -440,7 +463,8 @@ export default function () {
                 <button style={{ width: '100%' }} onClick={() => exportToExcel()}>导出所有计划到Excel</button>
                 <p style={{ marginTop: '15px', marginBottom: '0px' }}>* 仅支持追溯过去三个月和计划未来三月的WFO记录</p>
                 <p style={{ marginBottom: '0px' }}>* 请根据实际工作安排合理安排WFO时间</p>
-                <p style={{ marginTop: '0px' }}>* 本插件的WFO提示仅供参考，实际以公司的WFO为准</p>
+                <p style={{ marginBottom: '0px' }}>* 本插件的WFO提示仅供参考，实际以公司的WFO为准</p>
+                <p style={{ marginTop: '0px' }}>* 实际确认WFO天数统计是您需要在通知栏弹出通知询问您是否当日已经WFO，点击"是"才会进行统计。</p>
               </div>
             </div>
           </div>
