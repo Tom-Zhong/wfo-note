@@ -363,7 +363,7 @@ export default function () {
                 </div>
               </div>
               <h3 style={{ fontSize: '20px' }}>
-                您{currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}的WFO已达到
+                您{currentMonth?.toLocaleString('default', { month: 'long', year: 'numeric' })}的计划WFO已达到
                 {Math.floor(currentMonthWorkDays / (realWorkDays - currentMonthRestDays) * 100)} %
               </h3>
             </div>
