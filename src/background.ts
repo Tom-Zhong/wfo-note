@@ -70,6 +70,15 @@ browser.runtime.onMessage.addListener(async (message) => {
       await browser.storage.local.set({ remindBefore1day });
     }
   }
+
+  if (message && message.type === 'wfoRatio') {
+    if (message.payload) {
+      // console.log('Received wfoRatio from popup:', message.payload);
+      const { wfoRatio } = message.payload;
+      console.log('Received wfoRatio from popup:', wfoRatio);
+      await browser.storage.local.set({ wfoRatio });
+    }
+  }
 });
 
 browser.runtime.onInstalled.addListener(async() => {
@@ -226,6 +235,8 @@ browser.notifications.onClosed.addListener(async (id) => {
 // });
 
 self.addEventListener('notificationclick', async (event) => {
+  const wfoRatioOriginVal = (await browser.storage.local.get('wfoRatio')).wfoRatio;
+  const wfoRatio = Number(wfoRatioOriginVal) / 100;
   // console.log('Service Worker Notification clicked:', event);
   // @ts-ignore
   const action = event.action;
@@ -255,11 +266,11 @@ self.addEventListener('notificationclick', async (event) => {
     const currentUserWorkdays = (await browser.storage.local.get(`currentUserWorkdays`))[`currentUserWorkdays`] || 0;
 
     // 给出建议，用户如果确认的WFO日期达到或超过当月工作日数，则提示用户
-    if (existingWFOdates.length >= Math.ceil(currentUserWorkdays * 0.4) ) {
+    if (existingWFOdates.length >= Math.ceil(currentUserWorkdays * wfoRatio) ) {
       // @ts-ignore
       self.registration.showNotification('WFO提醒', {
         title: 'WFO提醒',
-        body: `按照您当前已经确认的工作日天数，您已经满足40%的WFO需求啦！接下来无需再WFO了！`,
+        body: `您当前已确认${existingWFOdates.length}工作日天数，您已经满足${wfoRatioOriginVal}%的WFO需求啦！接下来无需再WFO了！`,
         icon: '/icon/48.png',
         actions: [
           { action: 'ignore', title: '知道啦！' }
@@ -270,7 +281,7 @@ self.addEventListener('notificationclick', async (event) => {
        // @ts-ignore
        self.registration.showNotification('WFO提醒', {
         title: 'WFO提醒',
-        body: `按照您当前已经确认的工作日天数，您仍未满足40%的WFO需求，你可能还需要去公司${String(Math.ceil(currentUserWorkdays * 0.4) - existingWFOdates.length)}天WFO！`,
+        body: `您当前已确认${existingWFOdates.length}工作日天数，但是您仍未满足${wfoRatioOriginVal}%的WFO需求，你可能还需要去公司${String(Math.ceil(currentUserWorkdays * wfoRatio) - existingWFOdates.length)}天WFO！`,
         icon: '/icon/48.png',
         actions: [
           { action: 'ignore', title: '知道啦！' }
@@ -295,7 +306,7 @@ self.addEventListener('notificationclick', async (event) => {
 
     const weeksInMonth = Formatter.getWeeksInMonth(new Date());
 
-    const perWorkdaysPlusWeek = Math.ceil(currentUserWorkdays * 0.4) - existingWFOdates.length;
+    const perWorkdaysPlusWeek = Math.ceil(currentUserWorkdays * wfoRatio) - existingWFOdates.length;
 
     // 直接计算剩余几周，然后计算要达到40%的WFO， 剩下几周最少每周去公司几天
     const remainingWeeks = weeksInMonth - weekNumber;
@@ -307,7 +318,7 @@ self.addEventListener('notificationclick', async (event) => {
     // @ts-ignore
     self.registration.showNotification('WFO提醒', {
       title: 'WFO提醒',
-      body: perWorkdays === 0 ? `您已无需WFO了！` : `按照您当前已经确认工作日数，您接下来仍然需要每周去公司${perWorkdays} 天WFO！`,
+      body: perWorkdays === 0 ? `您已无需WFO了！` : `按照您当前已经确认${existingWFOdates.length}工作日数，您接下来仍然需要每周去公司${perWorkdays}天WFO！`,
       icon: '/icon/48.png',
       actions: [
         { action: 'ignore', title: '知道啦！' }

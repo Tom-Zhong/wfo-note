@@ -1,5 +1,5 @@
 import { Formatter } from "./Formatter";
-import { isBoolean } from "lodash";
+import { isBoolean, isNumber } from "lodash";
 
 /**
  * Utility functions for storing and retrieving data from localStorage.
@@ -7,6 +7,12 @@ import { isBoolean } from "lodash";
 export default class StorageUtils {
     static save(key: string, value: any) {
         console.log('StorageUtils.save called with key:', key, 'and value:', value);
+        
+        if (isNumber(value)) {
+            localStorage.setItem(key, value);
+            return;
+        }
+
         if (isBoolean(value)) {
             localStorage.setItem(key, value);
             return;

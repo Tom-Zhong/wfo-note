@@ -46,6 +46,7 @@ export default function () {
   const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0); // 当前月份已设定的工作日数量
   const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0); // 当前月份已设定的休息日数量
   const [alertMode, setAlertMode] = useState<string>(StorageUtils.load('alertMode') || 'silent'); // strict, flexible, silent
+  const [wfoRatio, setWfoRatio] = useState<number>(Number(StorageUtils.load('wfoRatio')) || 40);
   const [remindBefore1day, setRemindBefore1day] = useState<boolean>(StorageUtils.load('remindBefore1day') || false);
   const [alertModeErrState, setAlertModeErrState] = useState<string>('');
 
@@ -148,6 +149,7 @@ export default function () {
   }, []);
 
   const handleRemindBefore1dayCange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    // @ts-ignore
     const val = event.target.checked;
     setRemindBefore1day(val);
     StorageUtils.save('remindBefore1day', val);
@@ -164,6 +166,16 @@ export default function () {
         console.log('Notification permission denied');
       }
     });
+  }, []);
+
+  const handleWfoRatioChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => { 
+    const val = event.target.value;
+    setWfoRatio(Number(val));
+    console.log('wfoRatio', val)
+    StorageUtils.save('wfoRatio', Number(val));
+    Browser.runtime.sendMessage({ type: "wfoRatio", payload: {
+      wfoRatio: Number(val)
+    }});
   }, []);
 
   useEffect(() => {
@@ -478,10 +490,19 @@ export default function () {
           </div>
 
           <div>
+            <h2>WFO比例</h2>
+            <input type="radio" id="wfoRatio1" name="wfoRatio" value="40" onChange={(target) => handleWfoRatioChange(target)} checked={ wfoRatio === 40 } />
+            <label htmlFor="wfoRatio1"> 40% </label><br />
+            <input type="radio" id="wfoRatio2" name="wfoRatio" value="60" onChange={(target) => handleWfoRatioChange(target)} checked={ wfoRatio === 60 } />
+            <label htmlFor="wfoRatio2"> 60% </label><br />
+          </div>
+
+          <div>
             <h2>可选设置</h2>
             <input type="checkbox" id="remindeBefore1day" name="remindeBefore1day" onChange={(target) => handleRemindBefore1dayCange(target)} checked={remindBefore1day} />
             <label htmlFor="remindeBefore1day">提前一日提醒我要WFO</label><br />
           </div>
+
           <button onClick={() => setShowView(1)} style={{margin: '15px 0 20px 0'}}>返回主界面</button>
         </div>
       </div>
