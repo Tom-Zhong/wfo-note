@@ -1,15 +1,27 @@
 import { Formatter } from "./Formatter";
+import { isBoolean } from "lodash";
 
 /**
  * Utility functions for storing and retrieving data from localStorage.
  */
 export default class StorageUtils {
     static save(key: string, value: any) {
+        console.log('StorageUtils.save called with key:', key, 'and value:', value);
+        if (isBoolean(value)) {
+            localStorage.setItem(key, value);
+            return;
+        }
+
         localStorage.setItem(key, JSON.stringify(value));
     }
 
     static load(key: string): any | null {
         const item = localStorage.getItem(key);
+
+        if (isBoolean(item)) {
+            return item;
+        }
+
         if (item) {
             return JSON.parse(item);
         }

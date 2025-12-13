@@ -46,6 +46,7 @@ export default function () {
   const [currentMonthWorkDays, setCurrentMonthWorkDays] = useState<number>(0); // 当前月份已设定的工作日数量
   const [currentMonthRestDays, setCurrentMonthRestDays] = useState<number>(0); // 当前月份已设定的休息日数量
   const [alertMode, setAlertMode] = useState<string>(StorageUtils.load('alertMode') || 'silent'); // strict, flexible, silent
+  const [remindBefore1day, setRemindBefore1day] = useState<boolean>(StorageUtils.load('remindBefore1day') || false);
   const [alertModeErrState, setAlertModeErrState] = useState<string>('');
 
   const [showView, setShowView] = useState<number>(1); // 1: main, 2: about, 3: settings
@@ -136,6 +137,25 @@ export default function () {
       if (permission === 'granted') {
         new Notification('WFO笔记本', {
           body: `提醒模式已切换为：${mode === 'strict' ? 'WFO日提醒模式（按照您设定的WFO进行提醒）' : mode === 'flexible' ? '灵活模式（每个工作日都会提醒您）' : '静音模式（由您自行安排WFO）'}`,
+        });
+      } else {
+        setAlertModeErrState('无法启用提醒模式，请允许通知权限');
+        console.log('Notification permission denied');
+      }
+    });
+  }, []);
+
+  const handleRemindBefore1dayCange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const val = event.target.checked;
+    setRemindBefore1day(val);
+    StorageUtils.save('remindBefore1day', val);
+    Browser.runtime.sendMessage({ type: "remindBefore1day", payload: {
+      remindBefore1day: val
+    }});
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        new Notification('WFO笔记本', {
+          body: val ? `将会在计划WFO前一天提醒您要WFO` : `已取消提前一日提醒您要WFO`,
         });
       } else {
         setAlertModeErrState('无法启用提醒模式，请允许通知权限');
@@ -419,9 +439,18 @@ export default function () {
           }}
         >
           <h1 style={{marginBottom: '10px'}}>关于 WFO笔记本</h1>
-          <p>版本：v1.0.0</p>
-          <p>作者：Tom G Y Zung</p>
+          <p>版本：v1.0.0 Beta</p>
+          <p>作者：Tom Zung</p>
           <p>感谢您使用WFO笔记本！这个插件旨在帮助您更好地管理和记录您的远程办公时间。</p>
+          <p>本插件基于React和vite-plugin-web-extension开发，使用React Hooks进行状态管理。</p>
+          <p>当前实现功能</p>
+          <ol>
+            <li>计划WFO时间（可以计划工作日，休息日）</li>
+            <li>计算WFO比率（帮助您计算你的WFO比率）</li>
+            <li>导出所有计划到Excel （可以导出您已经计划好的WFO计划）</li>
+            <li>设置提醒模式（按照WFO计划提醒， 每日提醒或者静默不提醒）</li>
+            <li>设置提前一天WFO提醒（按照您的计划，可以提前一天告诉您明天要WFO）</li>
+          </ol>
           <p>如果您有任何建议或反馈，欢迎通过以下方式联系我：</p>
           <ul>
             <li>GitHub：<a href="https://github.com/Tom-Zhong/wfo-note">https://github.com/Tom-Zhong/wfo-note</a></li>
@@ -435,7 +464,6 @@ export default function () {
           }}
         >
           <h1 style={{marginBottom: '10px'}}>设置</h1>
-          {/* <p>目前暂无可配置选项，敬请期待！</p> */}
           <div>
             <h2>提醒模式</h2>
             <input type="radio" id="mode1" name="remindMode" value="strict" onChange={() => handleAlertModeChange('strict')} checked={alertMode === 'strict'} />
@@ -445,6 +473,12 @@ export default function () {
             <input type="radio" id="mode3" name="remindMode" value="silent" onChange={() => handleAlertModeChange('silent')} checked={alertMode === 'silent'} />
             <label htmlFor="mode3"> 静音模式（不进行任何提醒, 由您自行规划）</label><br />
             { alertModeErrState && <p style={{ color: 'red', margin: '10px 0' }}>{alertModeErrState}</p> }
+          </div>
+
+          <div>
+            <h2>可选设置</h2>
+            <input type="checkbox" id="remindeBefore1day" name="remindeBefore1day" onChange={(target) => handleRemindBefore1dayCange(target)} checked={remindBefore1day} />
+            <label htmlFor="remindeBefore1day">提前一日提醒我要WFO</label><br />
           </div>
           <button onClick={() => setShowView(1)} style={{margin: '15px 0 20px 0'}}>返回主界面</button>
         </div>
