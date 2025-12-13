@@ -1,5 +1,6 @@
 import browser from "webextension-polyfill";
 import { Formatter } from "./utils/Formatter";
+import { isWeekend } from "date-fns";
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -114,7 +115,7 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
     // flexible 模式下，每个工作日都提醒
     if (
       (getCurrentMonthWorkdays.includes(Formatter.formatDateToString(today)) && alertMode === 'strict')
-      || alertMode === 'flexible'
+      || (alertMode === 'flexible' && (!isWeekend(today) || isDev))
     ) {
       // 创建带按钮的通知
       // @ts-ignore
