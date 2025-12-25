@@ -82,9 +82,8 @@ browser.runtime.onMessage.addListener(async (message) => {
 });
 
 browser.runtime.onInstalled.addListener(async() => {
-  // browser.alarms.create('minuteReminder', { periodInMinutes: 1 });
-  browser.alarms.create('checkDates', { periodInMinutes: isDev ? 1 : 180 }); // 每分钟检查一次日期
-  console.log('[background.ts] period checked is registered, periodInMinutes: ', isDev ? 1 : 180);
+  browser.alarms.create('checkDates', { periodInMinutes: isDev ? 1 : 60 }); // 每一小时检查一次日期
+  console.log('[background.ts] period checked is registered, periodInMinutes: ', isDev ? 1 : 60);
 
   // 初始化存储
   !isDev && await browser.storage.local.set({ alertDay: '' }); // 重置 alertDay，确保模式切换后当天仍可提醒
@@ -141,7 +140,18 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
       //   tag: 'wfo-action',
       // });
 
+      const currentHours = today.getHours();
+
       const notificationId = 'wfo-reminder-' + Date.now();
+
+      // console.log('当前时间， currentHours:', currentHours);
+
+      // 只在9:00 - 18:00提醒
+      if (currentHours < 9 || currentHours > 18) {
+        // console.log('[background.ts] Notification不会展示，是因为当前时间不在9:00 - 18:00内， 即上班时间段内。');
+        return;
+      }
+
       const notificationOptions = {
         title: 'WFO提醒',
         body: `[${modeText}] 今天（${Formatter.formatDateToString(today)} 您有计划去公司办公！ 你今天有WFO吗？`,
