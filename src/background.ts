@@ -86,10 +86,10 @@ browser.runtime.onInstalled.addListener(async() => {
   console.log('[background.ts] period checked is registered, periodInMinutes: ', isDev ? 1 : 60);
 
   // 初始化存储
-  !isDev && await browser.storage.local.set({ alertDay: '' }); // 重置 alertDay，确保模式切换后当天仍可提醒
-  !isDev && await browser.storage.local.set({ alertMode: 'flexible' });
-  !isDev && await browser.storage.local.set({ workdays: {} });
-  !isDev && await browser.storage.local.set({ wfoRatio: 40 });
+  await browser.storage.local.set({ alertDay: '' }); // 重置 alertDay，确保模式切换后当天仍可提醒
+  await browser.storage.local.set({ alertMode: 'flexible' });
+  await browser.storage.local.set({ workdays: {} });
+  await browser.storage.local.set({ wfoRatio: 40 });
 });
 
 browser.alarms.onAlarm.addListener(async (alarm) => {
