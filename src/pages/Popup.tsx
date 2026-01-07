@@ -355,6 +355,15 @@ export default function () {
               flexDirection: 'row',
             }}>
             <div style={{ marginRight: '20px' }}>
+              <h3 style={{ fontSize: '20px', marginTop: '10px', marginBottom: '5px', whiteSpace: 'nowrap', fontWeight: 'bold', padding: '2px 5px', border: '1px solid grey' }}>
+                {currentMonth?.toLocaleString('default', { month: 'long' })}的计划WFO已达到
+                {Math.floor(currentMonthWorkDays / (realWorkDays - currentMonthRestDays) * 100)} %
+              </h3>
+              <h3 style={{ fontSize: '10px', marginTop: '0px', whiteSpace: 'nowrap', fontWeight: 'normal' }}>
+                {currentMonth?.toLocaleString('default', { month: 'long'})}的实际确认WFO天数为
+                {currentUserWfoDatesLength}天, WFO为
+                {Math.floor(currentUserWfoDatesLength / (realWorkDays - currentMonthRestDays) * 100)}%(计算方法为弹窗确认)
+              </h3>
               <h2 style={{ marginBottom: '5px' }}>选择日期</h2>
               <p>(选择您计划的工作日或休息日)</p>
               <DayPicker
@@ -392,15 +401,6 @@ export default function () {
                   <span>休假</span>
                 </div>
               </div>
-              <h3 style={{ fontSize: '16px', marginBottom: '0px', whiteSpace: 'nowrap', fontWeight: 'bold', padding: '2px 5px', border: '1px solid grey' }}>
-                {currentMonth?.toLocaleString('default', { month: 'long'})}的实际确认WFO天数为
-                {currentUserWfoDatesLength} 天(WFO已达到
-                {Math.floor(currentUserWfoDatesLength / (realWorkDays - currentMonthRestDays) * 100)} %)
-              </h3>
-              <h3 style={{ fontSize: '14x', whiteSpace: 'nowrap', marginTop: '2px', fontWeight: 'normal' }}>
-                ({currentMonth?.toLocaleString('default', { month: 'long' })}的计划WFO已达到
-                {Math.floor(currentMonthWorkDays / (realWorkDays - currentMonthRestDays) * 100)} %)
-              </h3>
             </div>
             <div style={{ marginRight: '20px', flexGrow: 1 }}>
               <h2 style={{
