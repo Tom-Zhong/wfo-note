@@ -7,20 +7,35 @@ const isDev = process.env.NODE_ENV === 'development';
 //  创建并且按指定秒数消失notification
 function createAutoClosingNotification(id: string, options: any, timeoutMs: number = 60000) {
   // @ts-ignore
-  self.registration.showNotification(options.title, {
-    ...options,
-    tag: id // Use tag to identify the notification
-  });
-  
-  // Automatically close the notification after timeoutMs milliseconds
-  setTimeout(() => {
-    // @ts-ignore
+
     self.registration.getNotifications({tag: id}).then(notifications => {
+      var ifExistNoti = false
       notifications.forEach((notification: any) => {
-        notification.close();
+        if (notification.tag === id) {
+          ifExistNoti = true
+        }
+      });
+      if (ifExistNoti) {
+        console.log(`${id} notification exist!`);
+        return;
+      }
+      console.log('show notification');
+      self.registration.showNotification(options.title, {
+        ...options,
+        tag: id // Use tag to identify the notification
       });
     });
-  }, timeoutMs);
+
+  
+  // Automatically close the notification after timeoutMs milliseconds
+  // setTimeout(() => {
+  //   // @ts-ignore
+  //   self.registration.getNotifications({tag: id}).then(notifications => {
+  //     notifications.forEach((notification: any) => {
+  //       notification.close();
+  //     });
+  //   });
+  // }, timeoutMs);
 }
 
 // 监听 popup 发送的消息，立即弹通知
@@ -108,7 +123,7 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
     const alertDay: string = alertDayResult.alertDay || '';
     // console.log('Last alert day:', alertDay);
 
-    if (alertDay === Formatter.formatDateToString(today) && !isDev) {
+    if (alertDay === Formatter.formatDateToString(today)) {
       // console.log('Already alerted for today:', Formatter.formatDateToString(today));
       return;
     }
@@ -142,7 +157,7 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
 
       const currentHours = today.getHours();
 
-      const notificationId = 'wfo-reminder-' + Date.now();
+      const notificationId = 'wfo-reminder-today';
 
       // console.log('当前时间， currentHours:', currentHours);
 
@@ -165,7 +180,7 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
 
       createAutoClosingNotification(notificationId, notificationOptions, 10000);
 
-      await browser.storage.local.set({ alertDay: Formatter.formatDateToString(new Date()) });
+      // await browser.storage.local.set({ alertDay: Formatter.formatDateToString(new Date()) });
 
       // browser.notifications.create('wfo-action', {
       //   type: 'basic',
@@ -232,23 +247,6 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
   }
 });
 
-// 监听通知关闭
-browser.notifications.onClosed.addListener(async (id) => {
-  // console.log('Notification closed:', id);
-  await browser.storage.local.set({ alertDay: Formatter.formatDateToString(new Date()) });
-});
-
-// 关闭通知
-// browser.notifications.onClicked.addListener((id) => {
-//   // console.log('Notification clicked:', id);
-//   browser.notifications.clear(id);
-// });
-
-// browser.notifications.onButtonClicked.addListener((id, buttonIndex) => {
-//   // console.log('Notification button clicked:', id, buttonIndex);
-//   browser.notifications.clear(id);
-// });
-
 self.addEventListener('notificationclick', async (event) => {
   const wfoRatioOriginVal = (await browser.storage.local.get('wfoRatio')).wfoRatio;
   const wfoRatio = Number(wfoRatioOriginVal) / 100;
@@ -263,6 +261,7 @@ self.addEventListener('notificationclick', async (event) => {
     // 获取当月用户点击确认WFO的日期列表
     const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
     // console.log('Current month for WFO storage:', currentMonth);
+    await browser.storage.local.set({ alertDay: Formatter.formatDateToString(new Date()) });
 
     // 获取已有的WFO日期列表
     const existingWFOdates = (await browser.storage.local.get(`userWfoDates_${currentMonth}`))[`userWfoDates_${currentMonth}`] || [];
@@ -353,5 +352,7 @@ self.addEventListener('notificationclick', async (event) => {
     });
   }
 });
-
+self.addEventListener('notificationclose', event => {
+  console.log('通知已关闭:', event);
+});
 console.log("[background.ts] Background script loaded.");
