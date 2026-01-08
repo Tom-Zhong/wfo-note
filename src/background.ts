@@ -285,7 +285,9 @@ self.addEventListener('notificationclick', async (event) => {
     // 确认WFO操作
     // console.log('User confirmed they have WFO today.');
     // 获取当月用户点击确认WFO的日期列表
-    const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+    const year = new Date().getFullYear();
+    const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
+    const currentMonth = `${year}-${month}` // 'YYYY-MM'
     // console.log('Current month for WFO storage:', currentMonth);
     await setCheckToday();
     // 获取已有的WFO日期列表
@@ -303,6 +305,7 @@ self.addEventListener('notificationclick', async (event) => {
       // postMessage to popup.tsx
       await browser.runtime.sendMessage({ type: 'userWfoDates', payload: {
           [`userWfoDates_${currentMonth}`]: existingWFOdates,
+          currentMonth,
         }});
     } catch (e) {
       console.log(e)
