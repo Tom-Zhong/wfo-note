@@ -101,14 +101,12 @@ export default function () {
     // get message from background.ts
     Browser.runtime.onMessage.addListener((message) => {
       if (message.type === 'userWfoDates') {
-        const year = new Date(currentMonth).getFullYear();
-        const month = (new Date(currentMonth).getMonth() + 1).toString().padStart(2, '0');
-        // const formatCurrentMonth = new Date(currentMonth).toLocaleString().slice(0, 7); // YYYY-MM
-        const formatCurrentMonth = `${year}-${month}`
-        console.log(message.payload, 'userWfoDates');
-        if (message.payload && message.payload[`userWfoDates_${formatCurrentMonth}`]) {
-          StorageUtils.save(`userWfoDates_${formatCurrentMonth}`, message.payload[`userWfoDates_${formatCurrentMonth}`]);
-          setCurrentUserWfoDatesLength(message.payload[`userWfoDates_${formatCurrentMonth}`].length);
+        console.log(message.payload);
+        if (message.payload) {
+          const userWfoDatesArray = message.payload[`userWfoDates_${message.payload.currentMonth}`];
+          console.log(userWfoDatesArray);
+          StorageUtils.save(`userWfoDates_${message.payload.currentMonth}`, userWfoDatesArray);
+          setCurrentUserWfoDatesLength(userWfoDatesArray.length);
         } else {
           setCurrentUserWfoDatesLength(0);
         }

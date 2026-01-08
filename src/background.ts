@@ -113,6 +113,7 @@ browser.runtime.onMessage.addListener(async (message) => {
       // postMessage to popup.tsx
       await browser.runtime.sendMessage({ type: 'userWfoDates', payload: {
           [`userWfoDates_${currentMonth}`]: userWfoDates,
+          currentMonth,
         }});
     } else {
       await browser.runtime.sendMessage({ type: 'userWfoDates', payload: null });
