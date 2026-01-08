@@ -266,7 +266,7 @@ self.addEventListener('notificationclick', async (event) => {
     // 获取当月用户点击确认WFO的日期列表
     const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
     // console.log('Current month for WFO storage:', currentMonth);
-    await setCheckToday()
+    await setCheckToday();
     // 获取已有的WFO日期列表
     const existingWFOdates = (await browser.storage.local.get(`userWfoDates_${currentMonth}`))[`userWfoDates_${currentMonth}`] || [];
     // console.log('Existing WFO dates for current month:', existingWFOdates);
