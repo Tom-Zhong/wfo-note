@@ -98,6 +98,26 @@ browser.runtime.onMessage.addListener(async (message) => {
       await browser.storage.local.set({ wfoRatio });
     }
   }
+
+  // 页面从service worker中获取用户手动点击确认的WFO day
+  if (message && message.type === 'userWfoDates') {
+    const payload = message.payload
+    const year = new Date(payload).getFullYear();
+    const month = (new Date(payload).getMonth() + 1).toString().padStart(2, '0');
+    console.log('year-month', year, month)
+    // const currentMonth = new Date(payload).toISOString().slice(0, 7);
+    const currentMonth = `${year}-${month}`;
+    const userWfoDates: any = (await browser.storage.local.get(`userWfoDates_${currentMonth}`))[`userWfoDates_${currentMonth}`];
+
+    if (userWfoDates) {
+      // postMessage to popup.tsx
+      await browser.runtime.sendMessage({ type: 'userWfoDates', payload: {
+          [`userWfoDates_${currentMonth}`]: userWfoDates,
+        }});
+    } else {
+      await browser.runtime.sendMessage({ type: 'userWfoDates', payload: null });
+    }
+  }
 });
 
 browser.runtime.onInstalled.addListener(async() => {

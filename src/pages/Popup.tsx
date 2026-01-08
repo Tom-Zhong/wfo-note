@@ -97,6 +97,23 @@ export default function () {
     //   setRestDays(storedRestDays.map((time: number) => new Date(time)));
     // }
     autoClearUnusedData();
+
+    // get message from background.ts
+    Browser.runtime.onMessage.addListener((message) => {
+      if (message.type === 'userWfoDates') {
+        const year = new Date(currentMonth).getFullYear();
+        const month = (new Date(currentMonth).getMonth() + 1).toString().padStart(2, '0');
+        // const formatCurrentMonth = new Date(currentMonth).toLocaleString().slice(0, 7); // YYYY-MM
+        const formatCurrentMonth = `${year}-${month}`
+        console.log(message.payload, 'userWfoDates');
+        if (message.payload && message.payload[`userWfoDates_${formatCurrentMonth}`]) {
+          StorageUtils.save(`userWfoDates_${formatCurrentMonth}`, message.payload[`userWfoDates_${formatCurrentMonth}`]);
+          setCurrentUserWfoDatesLength(message.payload[`userWfoDates_${formatCurrentMonth}`].length);
+        } else {
+          setCurrentUserWfoDatesLength(0);
+        }
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -129,22 +146,15 @@ export default function () {
       Browser.runtime.sendMessage({ type: "storageWorkdays", payload: workDays });
 
       // 导入userWfoDates for current month from localStorage
-      const userWfoDates = StorageUtils.load(`userWfoDates_${year}-${month}`);
-      setCurrentUserWfoDatesLength(userWfoDates ? userWfoDates.length : 0);
+      // const userWfoDates = StorageUtils.load(`userWfoDates_${year}-${month}`);
+      // setCurrentUserWfoDatesLength(userWfoDates ? userWfoDates.length : 0);
     }
-
-    // get message from background.ts
-    Browser.runtime.onMessage.addListener((message) => {
-      if (message.type === 'userWfoDates') {
-        const formatCurrentMonth = new Date(currentMonth).toISOString().slice(0, 7); // YYYY-MM
-        console.log(message.payload, 'userWfoDates');
-        if (message.payload && message.payload[`userWfoDates_${formatCurrentMonth}`]) {
-          StorageUtils.save(`userWfoDates_${formatCurrentMonth}`, message.payload[`userWfoDates_${formatCurrentMonth}`]);
-          setCurrentUserWfoDatesLength(message.payload[`userWfoDates_${formatCurrentMonth}`].length);
-        }
-      }
-    });
   }, [currentMonth, workDays, restDays]);
+
+  useEffect(() => {
+    // console.log('yes');
+    Browser.runtime.sendMessage({ type: "userWfoDates", payload: currentMonth });
+  }, [currentMonth])
 
   const handleAlertModeChange = useCallback((mode: string) => {
     setAlertMode(mode);
