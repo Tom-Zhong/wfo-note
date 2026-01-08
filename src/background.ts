@@ -341,7 +341,11 @@ self.addEventListener('notificationclick', async (event) => {
     // @ts-ignore
     event.notification.close();
   } else if (action === 'notWFOThisWeek') {
-    const currentMonth = new Date().toISOString().slice(0, 7);
+    await setCheckToday();
+
+    const year = new Date().getFullYear();
+    const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
+    const currentMonth = `${year}-${month}` // 'YYYY-MM'
     const existingWFOdates = (await browser.storage.local.get(`userWfoDates_${currentMonth}`))[`userWfoDates_${currentMonth}`] || [];
     // console.log('Existing WFO dates for current month:', existingWFOdates);
 
