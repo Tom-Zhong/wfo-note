@@ -292,14 +292,12 @@ self.addEventListener('notificationclick', async (event) => {
     const existingWFOdates = (await browser.storage.local.get(`userWfoDates_${currentMonth}`))[`userWfoDates_${currentMonth}`] || [];
     // console.log('Existing WFO dates for current month:', existingWFOdates);
 
-    if (existingWFOdates.includes(Formatter.formatDateToString(new Date()))) {
+    if (!existingWFOdates.includes(Formatter.formatDateToString(new Date()))) {
       // console.log('WFO date for today already recorded.');
-      await browser.storage.local.set({ [`userWfoDates_${currentMonth}`]: existingWFOdates });
-    } else {
       existingWFOdates.push(Formatter.formatDateToString(new Date()));
-      await browser.storage.local.set({ [`userWfoDates_${currentMonth}`]: existingWFOdates });
-      // console.log('Updated WFO dates for current month:', existingWFOdates);
     }
+
+    await browser.storage.local.set({ [`userWfoDates_${currentMonth}`]: existingWFOdates });
 
     try {
       // postMessage to popup.tsx
