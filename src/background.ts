@@ -1,8 +1,12 @@
-import browser from "webextension-polyfill";
+import browser, {notifications} from "webextension-polyfill";
 import { Formatter } from "./utils/Formatter";
 import { isWeekend } from "date-fns";
 
 const isDev = process.env.NODE_ENV === 'development';
+
+async function setCheckToday () {
+  await browser.storage.local.set({ alertDay: Formatter.formatDateToString(new Date()) });
+}
 
 //  创建并且按指定秒数消失notification
 function createAutoClosingNotification(id: string, options: any, timeoutMs: number = 60000) {
@@ -113,24 +117,24 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
     const result = await browser.storage.local.get('workdays');
     const alertMode = (await browser.storage.local.get('alertMode')).alertMode;
     const workdays: Record<string, string[]> = result.workdays || {};
-    // console.log('Checking workdays:', workdays);
+    console.log('Checking workdays:', workdays);
     const today = new Date(); // 'YYYY/MM/DD'
     const yearMonth = today.toISOString().slice(0, 7); // 'YYYY-MM'
     const getCurrentMonthWorkdays = workdays[yearMonth] || [];
-    // console.log('Current month workdays:', getCurrentMonthWorkdays);
+    console.log('Current month workdays:', getCurrentMonthWorkdays);
 
     const alertDayResult = await browser.storage.local.get('alertDay');
     const alertDay: string = alertDayResult.alertDay || '';
-    // console.log('Last alert day:', alertDay);
+    console.log('Last alert day:', alertDay);
 
     if (alertDay === Formatter.formatDateToString(today)) {
-      // console.log('Already alerted for today:', Formatter.formatDateToString(today));
+      console.log('Already alerted for today:', Formatter.formatDateToString(today));
       return;
     }
 
     if (alertMode === 'silent') {
       // 静音模式不提醒
-      // console.log('Alert mode is silent, no notification will be shown.');
+      console.log('Alert mode is silent, no notification will be shown.');
       return;
     }
 
@@ -159,11 +163,11 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
 
       const notificationId = 'wfo-reminder-today';
 
-      // console.log('当前时间， currentHours:', currentHours);
+      console.log('当前时间， currentHours:', currentHours);
 
       // 只在9:00 - 18:00提醒
-      if (currentHours < 9 || currentHours > 18) {
-        // console.log('[background.ts] Notification不会展示，是因为当前时间不在9:00 - 18:00内， 即上班时间段内。');
+      if (currentHours < 7 || currentHours > 18) {
+        console.log('[background.ts] Notification不会展示，是因为当前时间不在9:00 - 18:00内， 即上班时间段内。');
         return;
       }
 
@@ -261,8 +265,7 @@ self.addEventListener('notificationclick', async (event) => {
     // 获取当月用户点击确认WFO的日期列表
     const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
     // console.log('Current month for WFO storage:', currentMonth);
-    await browser.storage.local.set({ alertDay: Formatter.formatDateToString(new Date()) });
-
+    await setCheckToday()
     // 获取已有的WFO日期列表
     const existingWFOdates = (await browser.storage.local.get(`userWfoDates_${currentMonth}`))[`userWfoDates_${currentMonth}`] || [];
     // console.log('Existing WFO dates for current month:', existingWFOdates);
@@ -352,7 +355,13 @@ self.addEventListener('notificationclick', async (event) => {
     });
   }
 });
-self.addEventListener('notificationclose', event => {
+self.addEventListener('notificationclose', async event => {
   console.log('通知已关闭:', event);
+  switch (event.notification.tag) {
+    case 'wfo-reminder-today':
+      await setCheckToday()
+      break;
+  }
+  await notifications.clear(event.notification.tag)
 });
 console.log("[background.ts] Background script loaded.");
