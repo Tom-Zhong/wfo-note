@@ -120,6 +120,7 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
     console.log('Checking workdays:', workdays);
     const today = new Date(); // 'YYYY/MM/DD'
     const yearMonth = today.toISOString().slice(0, 7); // 'YYYY-MM'
+    console.log('yeahMonth, ', yearMonth,  workdays, workdays[yearMonth]);
     const getCurrentMonthWorkdays = workdays[yearMonth] || [];
     console.log('Current month workdays:', getCurrentMonthWorkdays);
 

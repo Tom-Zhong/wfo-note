@@ -39,7 +39,7 @@ export default class StorageUtils {
             // console.log('Checking existence and saving for date:', date);
             const formattedDate = Formatter.formatDateToString(date);
             const year = date.getFullYear();
-            const month = date.getMonth() + 1;
+            const month = (date.getMonth() + 1).toString().padStart(2, '0')
             let storageDays = StorageUtils.load(key);
             // console.log('storageDays:', month, year);
             if (storageDays && storageDays['' + year + '-' + month]) {

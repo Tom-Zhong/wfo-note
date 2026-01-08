@@ -109,7 +109,7 @@ export default function () {
       setRealWorkDays(workdays);
 
       const year = currentMonth.getFullYear();
-      const month = currentMonth.getMonth() + 1;
+      const month = (currentMonth.getMonth() + 1).toString().padStart(2, '0')
 
       const storedWorkDays = StorageUtils.load('workDays');
       if (storedWorkDays) {
