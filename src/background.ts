@@ -132,6 +132,21 @@ browser.runtime.onInstalled.addListener(async() => {
   await browser.storage.local.set({ wfoRatio: 40 });
 });
 
+async function checkIfNotShowThisWeek() {
+  const weekNumber = Formatter.getWeekNumber(new Date());
+  const notShowWeeks = (await browser.storage.local.get('notShowWeeks')).notShowWeeks
+
+  console.log('notShowWeeks', notShowWeeks, 'weeksInMonth', weekNumber)
+  if (notShowWeeks === weekNumber) {
+    console.log('选择了本周不去公司，所以本周将不会再提醒了！');
+    return true;
+  }
+
+  await browser.storage.local.set({ notShowWeeks: null });
+
+  return false;
+}
+
 browser.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === 'checkDates') {
     // console.log('[background.ts] period checked is triggered');
@@ -148,6 +163,10 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
     const alertDayResult = await browser.storage.local.get('alertDay');
     const alertDay: string = alertDayResult.alertDay || '';
     console.log('Last alert day:', alertDay);
+
+    if (await checkIfNotShowThisWeek()) {
+      return;
+    }
 
     if (alertDay === Formatter.formatDateToString(today)) {
       console.log('Already alerted for today:', Formatter.formatDateToString(today));
@@ -355,13 +374,15 @@ self.addEventListener('notificationclick', async (event) => {
     // console.log('currentUserWorkdays', currentUserWorkdays, Math.ceil(currentUserWorkdays * wfoRatio));
     // console.log('wfoRatio', wfoRatio);
     // console.log('existingWFOdates', existingWFOdates.length);
- 
+
     // 计算本周不去公司的话，接下来每周最少去公司几天
     // 接下来一周不去公司
     // 获取今天在本月第几周
     const weekNumber = Formatter.getWeekNumber(new Date());
 
     const weeksInMonth = Formatter.getWeeksInMonth(new Date());
+
+    await browser.storage.local.set({ notShowWeeks: weekNumber });
 
     const perWorkdaysPlusWeek = Math.ceil(currentUserWorkdays * wfoRatio) - existingWFOdates.length;
 
