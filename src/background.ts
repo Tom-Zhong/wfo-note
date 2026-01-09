@@ -397,7 +397,8 @@ self.addEventListener('notificationclick', async (event) => {
     // @ts-ignore
     self.registration.showNotification('WFO提醒', {
       title: 'WFO提醒',
-      body: perWorkdays === 0 ? `您已无需WFO了！` : `按照您当前已经确认${existingWFOdates.length}工作日数，您接下来${remainingWeeks}需要每周去公司最少${perWorkdays.toFixed(2)}天， 建议每周${Math.ceil(perWorkdays)}天WFO！`,
+      // body: perWorkdays === 0 ? `您已无需WFO了！` : `按照您当前已经确认${existingWFOdates.length}工作日数，您接下来${remainingWeeks}需要每周去公司最少${perWorkdays.toFixed(2)}天， 建议每周${Math.ceil(perWorkdays)}天WFO！`,
+      body: perWorkdays === 0 ? `您已无需WFO了！` : `已确认本周不去公司，本周不会再有WFO提醒。已确认${existingWFOdates.length}天WFO，建议下周开始每周${Math.ceil(perWorkdays)}天WFO！`,
       icon: '/icon/48.png',
       actions: [
         { action: 'ignore', title: '知道啦！' }
